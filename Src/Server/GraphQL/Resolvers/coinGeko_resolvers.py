@@ -2,7 +2,7 @@ import requests
 import json
 
 
-# coinChartData resolver
+# coinChartData query resolver
 def resolve_coinChartData(obj, info, id, vs_currency, days, interval):
 
     payload = []
@@ -25,18 +25,21 @@ def resolve_coinChartData(obj, info, id, vs_currency, days, interval):
 # topCoins query resolver
 def resolve_topCoins(obj,
                      info,
+                     vs_currency,
                      id=None,
                      symbol=None,
                      name=None,
                      current_price=None,
                      market_cap=None,
                      market_cap_rank=None,
-                     price_change_percentage_24h=None):
+                     price_change_percentage_24h=None,
+                     circulating_supply=None,
+                     total_supply=None):
 
     payload = []
 
     with requests.get(
-            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h"
+            f"https://api.coingecko.com/api/v3/coins/markets?vs_currency={vs_currency}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h"
     ) as response:
         response_json = json.loads(response.text)
 
@@ -51,7 +54,8 @@ def resolve_topCoins(obj,
             coin['price_change_percentage_24h'] = asset[
                 'price_change_percentage_24h']
             coin['total_volume'] = asset['total_volume']
-
+            coin['circulating_supply'] = asset['circulating_supply']
+            coin['total_supply'] = asset['total_supply']
             payload.append(coin)
 
     return payload
