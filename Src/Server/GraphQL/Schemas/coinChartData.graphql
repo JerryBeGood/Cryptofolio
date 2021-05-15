@@ -1,4 +1,0 @@
-type CoinChartData {
-  time_stamp: String!
-  price: String!
-}

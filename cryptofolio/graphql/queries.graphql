@@ -1,4 +1,5 @@
 type Query {
+  # coingeko
   topCoins(vs_currency: String!): [Coin]!
   coinChartData(
     id: String!
@@ -6,5 +7,11 @@ type Query {
     days: String!
     interval: String!
   ): [CoinChartData]!
-  userCredentials(API_key: String!, secret: String!): Boolean!
+
+  # binance
+  binanceAccountData(
+    API_key: String!
+    secret: String!
+    recvWindow: Int
+  ): binanceAccount
 }
