@@ -14,7 +14,7 @@ def resolve_binanceAccountData(obj, info, API_key, secret, recvWindow=5000):
                          request_body.encode('UTF-8'),
                          digestmod=hashlib.sha256).hexdigest()
 
-    with requests.get(f'https://testnet.binancefuture.com/fapi/v1/account',
+    with requests.get(f'https://testnet.binancefuture.com/sapi/v1/account',
                       params={
                           'recvWindow': recvWindow,
                           'timestamp': timestamp,
