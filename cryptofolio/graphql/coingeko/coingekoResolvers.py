@@ -1,5 +1,4 @@
 import requests
-import json
 
 
 # assetChartData query resolver
@@ -15,7 +14,7 @@ def resolve_assetChartData(obj, info, id, vs_currency, days, interval):
                 "interval": interval
             }) as response:
 
-        response_json = json.loads(response.text)
+        response_json = response.json()
 
         for element in response_json["prices"]:
             asset_chart_data_chunk = {}
@@ -30,20 +29,25 @@ def resolve_assetChartData(obj, info, id, vs_currency, days, interval):
 def resolve_topAssets(obj, info, vs_currency, category=None):
 
     payload = []
+    params = {
+        "vs_currency": vs_currency,
+        "order": "market_cap_desc",
+        "per_page": 100,
+        "page": 1,
+        "sparkline": False,
+        "price_change_percentage": "24h",
+    }
+
+    if category != None:
+        params["category"] = category
 
     with requests.get(f"https://api.coingecko.com/api/v3/coins/markets",
-                      params={
-                          "vs_currency": vs_currency,
-                          "order": "market_cap_desc",
-                          "per_page": 100,
-                          "page": 1,
-                          "sparkline": False,
-                          "price_change_percentage": "24h",
-                          "category": category
-                      }) as response:
-        response_json = json.loads(response.text)
+                      params=params,
+                      headers={"accept": "application/json"}) as response:
+        response_json = response.json()
 
-        print(response_json)
+        print("RESPONSE")
+        print(response.request.path_url)
         for element in response_json:
             asset = {}
             asset['id'] = element['id']
