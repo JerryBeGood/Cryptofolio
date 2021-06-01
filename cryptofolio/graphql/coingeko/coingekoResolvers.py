@@ -7,12 +7,13 @@ def resolve_assetChartData(obj, info, id, vs_currency, days, interval):
     payload = []
 
     with requests.get(
-            f"https://api.coingecko.com/api/v3/assets/{id}/market_chart",
+            f"https://api.coingecko.com/api/v3/coins/{id}/market_chart",
             params={
                 "vs_currency": vs_currency,
                 "days": days,
                 "interval": interval
-            }) as response:
+            },
+            headers={"accept": "application/json"}) as response:
 
         response_json = response.json()
 
@@ -28,7 +29,11 @@ def resolve_assetChartData(obj, info, id, vs_currency, days, interval):
 # topAssets query resolver
 def resolve_topAssets(obj, info, vs_currency, category=None):
 
-    payload = []
+    # Payload
+    assets = []
+
+    # Request's arguments
+    headers = {"accept": "application/json"}
     params = {
         "vs_currency": vs_currency,
         "order": "market_cap_desc",
@@ -41,13 +46,41 @@ def resolve_topAssets(obj, info, vs_currency, category=None):
     if category != None:
         params["category"] = category
 
-    with requests.get(f"https://api.coingecko.com/api/v3/coins/markets",
-                      params=params,
-                      headers={"accept": "application/json"}) as response:
+    
+    try:
+        response = requests.get(
+            f"https://api.coingecko.com/api/v3/coins/markets",
+            params=params,
+            headers=headers,
+            timeout=(3, 5))
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as errh:
+        return {
+            'success': False,
+            'errors': "An Http Error occurred:" + repr(errh),
+            'assets': None
+        }
+    except requests.exceptions.ConnectionError as errc:
+        return {
+            'success': False,
+            'errors': "An Error Connecting to the API occurred:" + repr(errc),
+            'assets': None
+        }
+    except requests.exceptions.Timeout as errt:
+        return {
+            'success': False,
+            'errors': "A Timeout Error occurred:" + repr(errt),
+            'assets': None
+        }
+    except requests.exceptions.RequestException as err:
+        return {
+            'success': False,
+            'errors': "An Unknown Error occurred" + repr(err),
+            'assets': None
+        }
+    else:
         response_json = response.json()
 
-        print("RESPONSE")
-        print(response.request.path_url)
         for element in response_json:
             asset = {}
             asset['id'] = element['id']
@@ -62,6 +95,6 @@ def resolve_topAssets(obj, info, vs_currency, category=None):
             asset['circulating_supply'] = element['circulating_supply']
             asset['total_supply'] = element['total_supply']
 
-            payload.append(asset)
+            assets.append(asset)
 
-    return payload
+        return {'success': True, 'errors': None, 'assets': assets}

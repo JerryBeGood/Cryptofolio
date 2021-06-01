@@ -11,6 +11,11 @@ coingekoTypes = '''
         circulating_supply: String
         total_supply: String
     }
+    type AssetsResult {
+        success: Boolean!
+        errors: String
+        assets: [Asset]
+    }
     type AssetChartData {
         time_stamp: String!
         price: String!

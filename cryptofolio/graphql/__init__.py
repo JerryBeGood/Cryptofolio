@@ -1,11 +1,12 @@
 from ariadne import load_schema_from_path, ObjectType, make_executable_schema
-from cryptofolio.graphql.binance import binanceResolvers, binanceQueries, binanceTypes
+from cryptofolio.graphql.binance import binanceResolvers, binanceQueries, binanceTypes, binanceMutations
 from cryptofolio.graphql.coingeko import coingekoQueries, coingekoResolvers, coingekoTypes
 
 # GraphQL
 # Loading schemas into string variables
 allQueries = 'type Query{' + binanceQueries.binanceQueries + coingekoQueries.coingekoQueries + '}'
 allTypes = binanceTypes.binanceTypes + coingekoTypes.coingekoTypes
+allMutations = 'type Mutation{' + binanceMutations.binanceMutations + '}'
 
 # Initializing types variables
 query = ObjectType("Query")

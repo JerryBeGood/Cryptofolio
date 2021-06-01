@@ -3,5 +3,5 @@ binanceQueries = '''
         API_key: String!
         secret: String!
         recvWindow: Int
-    ): binanceAccount
+    ): BinanceAccount
 '''

@@ -1,5 +1,5 @@
 coingekoQueries = '''
-    topAssets(vs_currency: String!, category: String): [Asset]!
+    topAssets(vs_currency: String!, category: String): AssetsResult!
     assetChartData(
     id: String!
     vs_currency: String!
