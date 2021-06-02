@@ -1,0 +1,68 @@
+"""
+Orders
+"""
+union OrderBody = MarketOrder | LimitOrder | StopLossOrder
+
+interface Order {
+  symbol: String!
+  side: String!
+  type: OrderType!
+  timestamp: String!
+  recvWindow: Int
+}
+
+type OrderResult {
+  success: Boolean!
+  errors: String
+  order: OrderBody!
+}
+
+type MarketOrder implements Order {
+  symbol: String!
+  side: String!
+  type: OrderType!
+  timestamp: String!
+  recvWindow: Int
+  base: Boolean!
+  quantity: Float!
+}
+
+type LimitOrder implements Order {
+  symbol: String!
+  side: String!
+  type: OrderType!
+  timestamp: String!
+  recvWindow: Int
+  timeInForce: TIN!
+  quantity: Float!
+  price: Float!
+  icebergQty: Float
+}
+
+type StopLossOrder implements Order {
+  symbol: String!
+  side: String!
+  type: OrderType!
+  timestamp: String!
+  recvWindow: Int
+  quantity: Float!
+  stopPrice: Float!
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+  STOP_LOSS
+}
+
+enum Side {
+  BUY
+  SELL
+}
+
+# TIN - TimeInForce
+enum TIN {
+  GTC
+  IOC
+  FOK
+}

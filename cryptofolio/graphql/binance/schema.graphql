@@ -1,0 +1,37 @@
+type Query {
+  binanceAccountData(
+    API_key: String!
+    secret: String!
+    recvWindow: Int
+  ): BinanceAccount
+
+  """
+  binanceExchangeInfo fetches data regarding order placement for given pairs of symbols
+  """
+  binanceExchangeInfo(symbols: [String!]): [AssetPair!]
+}
+
+type BinanceAccount {
+  totalWalletBalance: String
+  availableBalance: String
+}
+
+"""
+AssetPair is a type that describes single pair of assets that is allowed to be used in an order.
+"""
+type AssetPair {
+  symbol: String!
+  status: String!
+  baseAsset: String!
+  quoteAsset: String!
+
+  """
+  List of order types in which a pair can be used
+  """
+  orderTypes: [String]!
+
+  """
+  List of markets on which pair is permited to be trade
+  """
+  permissions: [String]!
+}

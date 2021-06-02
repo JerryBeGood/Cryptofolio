@@ -46,7 +46,6 @@ def resolve_topAssets(obj, info, vs_currency, category=None):
     if category != None:
         params["category"] = category
 
-    
     try:
         response = requests.get(
             f"https://api.coingecko.com/api/v3/coins/markets",
