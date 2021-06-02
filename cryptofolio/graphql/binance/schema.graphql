@@ -6,9 +6,9 @@ type Query {
   ): BinanceAccount
 
   """
-  binanceExchangeInfo fetches data regarding order placement for given pairs of symbols
+  binanceExchangeInfo fetches data regarding order placement for given pairs of symbols. If symbols argument is empty then it returns list of all the pairs.
   """
-  binanceExchangeInfo(symbols: [String!]): [AssetPair!]
+  binanceExchangeInfo(symbols: [String]): [AssetPair!]
 }
 
 type BinanceAccount {

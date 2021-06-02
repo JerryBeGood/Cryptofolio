@@ -1,9 +1,10 @@
 import requests
 import time
 import hmac, hashlib
+from cryptofolio import binance_exchange_info
 
 
-# binanceAccountData query resolver
+# Query: binanceAccountData resolver
 def resolve_binanceAccountData(obj, info, API_key, secret, recvWindow=5000):
 
     payload = []
@@ -30,5 +31,18 @@ def resolve_binanceAccountData(obj, info, API_key, secret, recvWindow=5000):
         binanceAccount['availableBalance'] = response_json['availableBalance']
 
         payload = binanceAccount
+
+    return payload
+
+
+# Query: binanceExchangeInfo resolver
+def resolve_binanceExchangeInfo(obj, info, symbols=None):
+
+    payload = []
+    if symbols == None:
+        payload = binance_exchange_info.values()
+    else:
+        for symbol in symbols:
+            payload.append(binance_exchange_info[symbol])
 
     return payload
