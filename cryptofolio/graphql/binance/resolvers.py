@@ -38,11 +38,14 @@ def resolve_binanceAccountData(obj, info, API_key, secret, recvWindow=5000):
 # Query: binanceExchangeInfo resolver
 def resolve_binanceExchangeInfo(obj, info, symbols=None):
 
+    keys = binance_exchange_info.keys()
     payload = []
+
     if symbols == None:
         payload = binance_exchange_info.values()
     else:
         for symbol in symbols:
-            payload.append(binance_exchange_info[symbol])
+            if symbol in keys:
+                payload.append(binance_exchange_info[symbol])
 
     return payload
