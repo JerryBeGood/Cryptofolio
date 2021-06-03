@@ -2,11 +2,13 @@ import requests
 import time
 import hmac, hashlib
 
+# from cryptofolio import binance_exchange_info
 
-# binanceAccountData query resolver
-def resolve_binanceAccountData(obj, info, API_key, secret, recvWindow=5000):
 
-    payload = []
+# binanceAccountInfo query resolver
+def resolve_binanceAccountInfo(obj, info, API_key, secret, recvWindow=5000):
+
+    payload = {}
 
     timestamp = int(round(time.time() * 1000))
     request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
@@ -24,11 +26,33 @@ def resolve_binanceAccountData(obj, info, API_key, secret, recvWindow=5000):
 
         response_json = response.json()
 
-        binanceAccount = {}
-        binanceAccount['totalWalletBalance'] = response_json[
-            'totalWalletBalance']
-        binanceAccount['availableBalance'] = response_json['availableBalance']
+        payload['succes'] = True
+        payload['errors'] = ""
+        payload['accountType'] = response_json['accountType']
+        payload['balances'] = []
 
-        payload = binanceAccount
+        for asset in response_json['balances']:
+            balance = {}
+            balance['asset'] = asset['asset']
+            balance['free'] = asset['free']
+            balance['locked'] = asset['locked']
+
+            payload['balances'].append(balance)
 
     return payload
+
+
+# binanceExchangeInfo query resolver
+# def resolve_binanceExchangeInfo(obj, info, symbols=None):
+
+#     keys = binance_exchange_info.keys()
+#     payload = []
+
+#     if symbols == None:
+#         payload = binance_exchange_info.values()
+#     else:
+#         for symbol in symbols:
+#             if symbol in keys:
+#                 payload.append(binance_exchange_info[symbol])
+
+#     return payload

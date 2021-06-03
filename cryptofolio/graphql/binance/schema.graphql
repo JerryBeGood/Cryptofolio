@@ -1,37 +1,15 @@
 type Query {
-  binanceAccountData(
-    API_key: String!
-    secret: String!
-    recvWindow: Int
-  ): BinanceAccount
-
   """
   binanceExchangeInfo fetches data regarding order placement for given pairs of symbols
   """
   binanceExchangeInfo(symbols: [String!]): [AssetPair!]
-}
-
-type BinanceAccount {
-  totalWalletBalance: String
-  availableBalance: String
-}
-
-"""
-AssetPair is a type that describes single pair of assets that is allowed to be used in an order.
-"""
-type AssetPair {
-  symbol: String!
-  status: String!
-  baseAsset: String!
-  quoteAsset: String!
 
   """
-  List of order types in which a pair can be used
+  binanceAccountInfo retrieves data regarding user's account on SPOT market. API_key and secret are the means by which API identifies a user. Return type: BalancesResult consists user's accountType and list of balances regarding his assets.
   """
-  orderTypes: [String]!
-
-  """
-  List of markets on which pair is permited to be trade
-  """
-  permissions: [String]!
+  binanceAccountInfo(
+    API_key: String!
+    secret: String!
+    recvWindow: Int
+  ): BalancesResult
 }
