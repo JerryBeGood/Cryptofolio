@@ -14,8 +14,8 @@ query = ObjectType("Query")
 # Connecting resolving methods to schema queries
 query.set_field('topAssets', coingeko_resolvers.resolve_topAssets)
 query.set_field('assetChartData', coingeko_resolvers.resolve_assetChartData)
-query.set_field('binanceAccountData',
-                binance_resolvers.resolve_binanceAccountData)
+query.set_field('binanceAccountInfo',
+                binance_resolvers.resolve_binanceAccountInfo)
 query.set_field('binanceExchangeInfo',
                 binance_resolvers.resolve_binanceExchangeInfo)
 

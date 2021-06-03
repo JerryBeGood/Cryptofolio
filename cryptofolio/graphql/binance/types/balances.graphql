@@ -1,0 +1,15 @@
+type BalancesResult {
+  success: Boolean!
+  errors: String
+  accountType: String!
+  balances: [Balance]!
+}
+
+"""
+Balance type holds comprehensive data regarding single asset avaible on SPOT market in user's wallet.
+"""
+type Balance {
+  asset: String!
+  free: Float!
+  locked: Float!
+}
