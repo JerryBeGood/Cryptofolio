@@ -1,68 +1,86 @@
 """
-Orders
+Order response is return type that holds basic information about result of an order.
 """
-union OrderBody = MarketOrder | LimitOrder | StopLossOrder
-
-interface Order {
-  symbol: String!
-  side: String!
-  type: OrderType!
-  timestamp: String!
-  recvWindow: Int
+type OrderResponse {
+  """
+  Whether the order was successful or not
+  """
+  succes: Boolean!
+  """
+  Status of an oder
+  """
+  status: STATUS
+  """
+  Error code of unsuccessful order request
+  """
+  code: Int
+  """
+  Message describing error code usually regarding limits connected to each pair -> ExchangeInfo
+  """
+  msg: String
 }
 
-type OrderResult {
-  success: Boolean!
-  errors: String
-  order: OrderBody!
-}
-
-type MarketOrder implements Order {
+"""
+MarketOrder is an input type that describes market order on binance exchange.
+"""
+input MarketOrder {
+  """
+  A pair of assets that are trade for one another - base and quote asset
+  """
   symbol: String!
-  side: String!
-  type: OrderType!
-  timestamp: String!
+  """
+  Goal of the transaction: buy or sell
+  """
+  side: SIDE!
+  """
+  Time window in which request ought to be received otherwise is cancelled
+  """
   recvWindow: Int
+  """
+  When base is True, quantity field specifies the amount of base asset(first in a pair) the user wants to buy or sell.
+  For example sending order on BTCUSDT will specify how much BTC user is buying or selling.
+  When base is False, quantity field specifies the amount the user wants to spend(when buying) or receive(when selling) the quote asset(second in a pair).
+  For example sending order on BTCUSDT on the BUY side will buy as many BTC as quantity USDT can.
+  """
   base: Boolean!
   quantity: Float!
 }
 
-type LimitOrder implements Order {
-  symbol: String!
-  side: String!
-  type: OrderType!
-  timestamp: String!
-  recvWindow: Int
-  timeInForce: TIN!
-  quantity: Float!
-  price: Float!
-  icebergQty: Float
-}
-
-type StopLossOrder implements Order {
-  symbol: String!
-  side: String!
-  type: OrderType!
-  timestamp: String!
-  recvWindow: Int
-  quantity: Float!
-  stopPrice: Float!
-}
-
-enum OrderType {
-  MARKET
-  LIMIT
-  STOP_LOSS
-}
-
-enum Side {
+enum SIDE {
   BUY
   SELL
 }
 
-# TIN - TimeInForce
-enum TIN {
-  GTC
-  IOC
-  FOK
+"""
+Status of an order
+"""
+enum STATUS {
+  """
+  The order has been accepted by the engine.
+  """
+  NEW
+  """
+  A part of the order has been filled.
+  """
+  PARTIALLY_FILLED
+  """
+  The order has been completed.
+  """
+  FILLED
+  """
+  The order has been canceled by the user.
+  """
+  CANCELLED
+  """
+  Currently unused
+  """
+  PENDING_CANCELED
+  """
+  The order was not accepted by the engine and not processed.
+  """
+  REJECTED
+  """
+  The order was canceled according to the order type's rules
+  """
+  EXPIRED
 }
