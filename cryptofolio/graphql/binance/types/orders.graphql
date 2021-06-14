@@ -1,5 +1,5 @@
 """
-Order response is return type that holds basic information about result of an order.
+Basic information about result of an order.
 """
 type OrderResponse {
   """
@@ -21,7 +21,38 @@ type OrderResponse {
 }
 
 """
-MarketOrder is an input type that describes market order on binance exchange.
+Limit order
+"""
+input LimitOrder {
+  """
+  A pair of assets that are trade for one another - base and quote asset
+  """
+  symbol: String!
+  """
+  BUY or SELL
+  """
+  side: SIDE!
+  """
+  Divides order to specified number of smaller orders that will be executed consecutively.
+  If limit order is set to be also an iceberg order the timeInForce must be set to GTC.
+  """
+  icebergQty: Int
+  """
+  This sets how long an order will be active before expiration
+  """
+  timeInForce: TIF!
+  """
+  Amount of asset to be sold or bought
+  """
+  quantity: Float!
+  """
+  Limit price for which assets will be bought or sold
+  """
+  price: Float!
+}
+
+"""
+Market order
 """
 input MarketOrder {
   """
@@ -29,7 +60,7 @@ input MarketOrder {
   """
   symbol: String!
   """
-  Goal of the transaction: buy or sell
+  BUY or SELL
   """
   side: SIDE!
   """
@@ -44,6 +75,24 @@ input MarketOrder {
   """
   base: Boolean!
   quantity: Float!
+}
+
+enum TIF {
+  """
+  Good Til Canceled
+  An order will be on the book unless the order is canceled.
+  """
+  GTC
+  """
+  Immediate Or Cancel
+  An order will try to fill the order as much as it can before the order expires.
+  """
+  IOC
+  """
+  Fill or Kill
+  An order will expire if the full order cannot be filled upon execution.
+  """
+  FOK
 }
 
 enum SIDE {

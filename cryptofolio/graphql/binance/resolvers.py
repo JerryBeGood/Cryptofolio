@@ -42,6 +42,22 @@ def resolve_binanceAccountInfo(obj, info, API_key, secret, recvWindow=5000):
     return payload
 
 
+# binanceExchangeInfo query resolver
+def resolve_binanceExchangeInfo(obj, info, symbols=None):
+
+    keys = EXCHANGE_INFO.keys()
+    payload = []
+
+    if symbols == None:
+        payload = EXCHANGE_INFO.values()
+    else:
+        for symbol in symbols:
+            if symbol in keys:
+                payload.append(EXCHANGE_INFO[symbol])
+
+    return payload
+
+
 # binanceSPOTMarketOrder mutation resolver
 def resolve_binanceSPOTMarketOrder(obj, info, API_key, secret, order):
 
@@ -91,17 +107,55 @@ def resolve_binanceSPOTMarketOrder(obj, info, API_key, secret, order):
     return payload
 
 
-# binanceExchangeInfo query resolver
-def resolve_binanceExchangeInfo(obj, info, symbols=None):
+# binanceSPOTLimitOrder mutation resolver
+def resolve_binanceSPOTLimiOrder(info, obj, API_key, secret, order):
 
-    keys = EXCHANGE_INFO.keys()
-    payload = []
+    payload = {}
+    params = {}
+    request_body = ''
+    timestamp = int(round(time.time() * 1000))
 
-    if symbols == None:
-        payload = EXCHANGE_INFO.values()
+    if 'icebergQty' in order.keys():
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&timestamp={timestamp}'
+        params['symbol'] = order["symbol"]
+        params['side'] = order["side"]
+        params['type'] = 'LIMIT'
+        params['icebergQty'] = order['icebergQty']
+        params['quantity'] = order['quantity']
+        params['timeInForce'] = order['timeInForce']
+        params['price'] = order['price']
+        params['timestamp'] = timestamp
     else:
-        for symbol in symbols:
-            if symbol in keys:
-                payload.append(EXCHANGE_INFO[symbol])
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&timestamp={timestamp}'
+        params['symbol'] = order["symbol"]
+        params['side'] = order["side"]
+        params['type'] = 'LIMIT'
+        params['quantity'] = order['quantity']
+        params['timeInForce'] = order['timeInForce']
+        params['price'] = order['price']
+        params['timestamp'] = timestamp
+
+    signature = hmac.new(secret.encode(),
+                         request_body.encode('UTF-8'),
+                         digestmod=hashlib.sha256).hexdigest()
+
+    params['signature'] = signature
+
+    with requests.post('https://testnet.binance.vision/api/v3/order',
+                       params=params,
+                       headers={
+                           'X-MBX-APIKEY': API_key,
+                           'content-type': 'application/x-www-form-urlencoded'
+                       }) as response:
+
+        response_json = response.json()
+
+        if response.status_code != 200:
+            payload['succes'] = False
+            payload['code'] = response_json['code']
+            payload['msg'] = response_json['msg']
+        else:
+            payload['succes'] = True
+            payload['status'] = response_json['status']
 
     return payload

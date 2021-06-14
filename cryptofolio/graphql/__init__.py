@@ -22,6 +22,8 @@ query.set_field('binanceExchangeInfo',
 
 mutation.set_field('binanceSPOTMarketOrder',
                    binance_resolvers.resolve_binanceSPOTMarketOrder)
+mutation.set_field('binanceSPOTLimitOrder',
+                   binance_resolvers.resolve_binanceSPOTLimiOrder)
 
 # Initialization of the shcema
 schema = make_executable_schema([coingeko_typ_defs, binance_type_defs],

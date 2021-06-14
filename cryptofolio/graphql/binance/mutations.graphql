@@ -1,10 +1,19 @@
 type Mutation {
   """
-  binanceSPOTMarketOrder makes an market order on SPOT market of binance exchange. API_key and secret are the means by which API identifies a user. Order of input type MarketOrder is an argument that describes details of order to be made.
+  binanceSPOTMarketOrder makes an market order on SPOT market of binance exchange. API_key and secret are the means by which API identifies a user. Order of type MarketOrder is an argument that describes details of order to be made.
   """
   binanceSPOTMarketOrder(
     API_key: String!
     secret: String!
     order: MarketOrder
+  ): OrderResponse!
+
+  """
+  binanceSPOTLimitOrder makes an limit order on SPOT market of binance exchange. API_key and secret are the means by which API identifies a user. Order of type LimitOrder is an argument that describes details of order to be made.
+  """
+  binanceSPOTLimitOrder(
+    API_key: String!
+    secret: String!
+    order: LimitOrder
   ): OrderResponse!
 }
