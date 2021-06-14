@@ -21,7 +21,29 @@ type OrderResponse {
 }
 
 """
-Limit order
+Stop Loss order - sell or buy an asset once the price reaches the specified price known as the stop price
+"""
+input StopLossOrder {
+  """
+  A pair of assets that are trade for one another - base and quote asset
+  """
+  symbol: String!
+  """
+  BUY or SELL
+  """
+  side: SIDE!
+  """
+  Amount of asset to be sold or bought
+  """
+  quantity: Float!
+  """
+  The price at which asset will be sold or bought
+  """
+  stopPrice: Float!
+}
+
+"""
+Limit order - sell or buy an asset at a specific price or better
 """
 input LimitOrder {
   """
@@ -52,7 +74,7 @@ input LimitOrder {
 }
 
 """
-Market order
+Market order - sell or buy an asset immediately
 """
 input MarketOrder {
   """

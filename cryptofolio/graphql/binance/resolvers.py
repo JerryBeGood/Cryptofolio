@@ -58,6 +58,47 @@ def resolve_binanceExchangeInfo(obj, info, symbols=None):
     return payload
 
 
+# binanceSPOTStopLossOrder mutation resolver
+def resolve_binanceSPOTStopLossOrder(obj, info, API_key, secret, order):
+    payload = {}
+    params = {}
+    request_body = ''
+    timestamp = int(round(time.time() * 1000))
+
+    request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=STOP_LOSS&quantity={order["quantity"]}&stopPrice={order["stopPrice"]}&timestamp={timestamp}'
+    params['symbol'] = order["symbol"]
+    params['side'] = order["side"]
+    params['type'] = 'STOP_LOSS'
+    params['quantity'] = order['quantity']
+    params['stopPrice'] = order['stopPrice']
+    params['timestamp'] = timestamp
+
+    signature = hmac.new(secret.encode(),
+                         request_body.encode('UTF-8'),
+                         digestmod=hashlib.sha256).hexdigest()
+
+    params['signature'] = signature
+
+    with requests.post('https://testnet.binance.vision/api/v3/order',
+                       params=params,
+                       headers={
+                           'X-MBX-APIKEY': API_key,
+                           'content-type': 'application/x-www-form-urlencoded'
+                       }) as response:
+
+        response_json = response.json()
+
+        if response.status_code != 200:
+            payload['succes'] = False
+            payload['code'] = response_json['code']
+            payload['msg'] = response_json['msg']
+        else:
+            payload['succes'] = True
+            payload['status'] = response_json['status']
+
+    return payload
+
+
 # binanceSPOTMarketOrder mutation resolver
 def resolve_binanceSPOTMarketOrder(obj, info, API_key, secret, order):
 
