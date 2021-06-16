@@ -20,9 +20,9 @@ type Mutation {
   """
   binanceSPOTStopLossOrder makes an stop loss order on SPOT market of binance exchange. API_key and secret are the means by which API identifies a user. Order of type StopLossOrder is an argument that describes details of order to be made.
   """
-  binanceSPOTStopLossOrder(
+  binanceSPOTStopLossLimitOrder(
     API_key: String!
     secret: String!
-    order: StopLossOrder
+    order: StopLossLimitOrder
   ): OrderResponse!
 }

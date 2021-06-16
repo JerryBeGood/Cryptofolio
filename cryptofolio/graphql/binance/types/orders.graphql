@@ -21,9 +21,9 @@ type OrderResponse {
 }
 
 """
-Stop Loss order - sell or buy an asset once the price reaches the specified price known as the stop price
+Stop Loss Limit order - sell or buy an asset once the price reaches the specified price known as the stop price
 """
-input StopLossOrder {
+input StopLossLimitOrder {
   """
   A pair of assets that are trade for one another - base and quote asset
   """
@@ -33,9 +33,19 @@ input StopLossOrder {
   """
   side: SIDE!
   """
+  Divides order to specified number of smaller orders that will be executed consecutively.
+  If limit order is set to be also an iceberg order the timeInForce must be set to GTC.
+  """
+  icebergQty: Int
+  """
+  This sets how long an order will be active before expiration
+  """
+  timeInForce: TIF!
+  """
   Amount of asset to be sold or bought
   """
   quantity: Float!
+  price: Float!
   """
   The price at which asset will be sold or bought
   """
