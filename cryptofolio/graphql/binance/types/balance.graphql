@@ -1,7 +1,9 @@
-type BalancesResult {
-  success: Boolean!
-  errors: String
-  accountType: String!
+"""
+AccountInformation type holds general data about contents of user's wallet like: total value and it's percentage change over a period o time.
+"""
+type AccountInformation {
+  totalValue: Float!
+  valueChangePercentage: Float!
   balances: [Balance]!
 }
 
@@ -10,6 +12,5 @@ Balance type holds comprehensive data regarding single asset avaible on SPOT mar
 """
 type Balance {
   asset: String!
-  free: Float!
-  locked: Float!
+  percentage: Float!
 }

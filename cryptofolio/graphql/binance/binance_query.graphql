@@ -5,11 +5,11 @@ type Query {
   binanceExchangeInfo(symbols: [String!]): [AssetPair!]
 
   """
-  binanceAccountInfo retrieves data regarding user's account on SPOT market. API_key and secret are the means by which API identifies a user. Return type: BalancesResult consists user's accountType and list of balances regarding his assets.
+  binanceAccountInfo retrieves data regarding user's account on SPOT market. API_key and secret are the means by which API identifies a user.
   """
   binanceAccountInfo(
     API_key: String!
     secret: String!
     recvWindow: Int
-  ): BalancesResult
+  ): AccountInformation
 }
