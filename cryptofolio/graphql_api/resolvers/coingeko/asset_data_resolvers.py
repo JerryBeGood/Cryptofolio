@@ -1,8 +1,7 @@
 import requests
 
 
-# assetChartData query resolver
-def resolve_assetChartData(obj, info, id, vs_currency, days, interval):
+def asset_chart_data_resolver(obj, info, id, vs_currency, days, interval):
 
     payload = []
 
@@ -26,8 +25,7 @@ def resolve_assetChartData(obj, info, id, vs_currency, days, interval):
     return payload
 
 
-# topAssets query resolver
-def resolve_topAssets(obj, info, vs_currency, category=None):
+def top_assets_resolver(obj, info, vs_currency, category=None):
 
     # Payload
     assets = []

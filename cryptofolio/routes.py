@@ -1,6 +1,6 @@
 import cryptofolio as crypto
 from flask import request, jsonify
-from cryptofolio.graphql import schema
+from cryptofolio.graphql_api.schema import schema
 from ariadne import graphql_sync
 from ariadne.constants import PLAYGROUND_HTML
 
