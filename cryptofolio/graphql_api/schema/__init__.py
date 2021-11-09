@@ -1,6 +1,6 @@
 from ariadne import make_executable_schema
-from cryptofolio.graphql.binance import binance_mutation, binance_query, binance_type_defs
-from cryptofolio.graphql.coingeko import coingeko_typ_defs, coingeko_query
+from cryptofolio.graphql_api.schema.binance import binance_mutation, binance_query, binance_type_defs
+from cryptofolio.graphql_api.schema.coingeko import coingeko_typ_defs, coingeko_query
 
 # Initialization of the shcema
 schema = make_executable_schema(
