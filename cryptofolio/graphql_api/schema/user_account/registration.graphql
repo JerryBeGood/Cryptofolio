@@ -1,0 +1,8 @@
+extend type Mutations {
+  singUp(email: String!, password: String!): AuthPayload!
+}
+
+type AuthPayload {
+  Success: Boolean!
+  Token: String
+}
