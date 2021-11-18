@@ -1,6 +1,10 @@
-extend type Mutations {
-  singUp(email: String!, password: String!): AuthPayload!
-  activate(email: String!, password: String!, code: String!): AuthPayload!
+extend type Mutation {
+  signUp(email: String!, password: String!): AuthPayload!
+  activateAccount(
+    email: String!
+    password: String!
+    code: String!
+  ): AuthPayload!
 }
 
 type AuthPayload {

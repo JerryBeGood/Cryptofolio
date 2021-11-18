@@ -2,6 +2,7 @@ class BaseConfig:
     """Base configuration"""
     DEBUG = False
     TESTING = False
+    SECRET_KEY = b'sqn\xd1\x9dH!\x92\xd4\x99\xfd\xf2\xd2r`S\xa4n\xfbt\xb7E\xfc\xa2'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'postgresql://admin:admin1@localhost:5432/cryptofolio'
 
