@@ -1,5 +1,6 @@
 extend type Mutations {
   singUp(email: String!, password: String!): AuthPayload!
+  activate(email: String!, password: String!, code: String!): AuthPayload!
 }
 
 type AuthPayload {
