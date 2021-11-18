@@ -1,22 +1,27 @@
 from flask import Flask
 from flask import request, jsonify
+from flask_bcrypt import Bcrypt
+from flask_mail import Mail
 
 from ariadne import graphql_sync
 from ariadne.constants import PLAYGROUND_HTML
 
 from cryptofolio.graphql_api.schema import schema
 from cryptofolio.models import db
+from cryptofolio.config import DevelopmentConfig
 
 app = Flask(__name__.split('.')[0])
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin1@localhost:5432/cryptofolio'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config.from_object(DevelopmentConfig)
+
+mail = Mail()
+bcrypt = Bcrypt()
 
 db.init_app(app)
+bcrypt.init_app(app)
+mail.init_app(app)
 app.app_context().push()
 
 
-# GraphQL API endpoints
 @app.route("/graphql", methods=["GET"])
 def graphql_playground():
     # On GET request serve GraphQL Playground
