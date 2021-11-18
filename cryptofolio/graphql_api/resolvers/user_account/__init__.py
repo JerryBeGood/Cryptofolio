@@ -1,0 +1,1 @@
+from .user_account_resolvers import sign_up_resolver
