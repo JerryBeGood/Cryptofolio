@@ -1,3 +1,2 @@
-from .user_account_resolvers import sign_up_resolver, activate_account_resolver
-from .user_account_resolvers import generate_auth_token
+from .user_account_resolvers import sign_up_resolver, activate_account_resolver, generate_activation_code_resolver
 

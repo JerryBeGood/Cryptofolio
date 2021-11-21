@@ -5,6 +5,7 @@ extend type Mutation {
     password: String!
     code: String!
   ): AuthPayload!
+  generateActivationCode(email: String!, password: String!): AuthPayload!
 }
 
 type AuthPayload {
