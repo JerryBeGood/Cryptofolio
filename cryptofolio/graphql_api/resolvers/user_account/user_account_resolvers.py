@@ -16,7 +16,9 @@ def sign_up_resolver(obj, info, email, password):
         'email': email,
         'password': bcrypt.generate_password_hash(password).decode('utf-8'),
         'is_activated': False,
-        'activation_code': secrets.randbelow(99999)
+        'activation_code': secrets.randbelow(99999),
+        'binance': False,
+        'bybit': False
     }
 
     try:
@@ -55,7 +57,7 @@ def activate_account_resolver(obj, info, email, password, code):
     user.is_activated = True
     db.session.commit()
 
-    auth_token = generate_auth_token(user.id, False, False)
+    auth_token = generate_auth_token(user.id, user.binance, user.bybit)
 
     return {'Success': auth_token[0], 'Token': auth_token[1]}
 
@@ -91,14 +93,14 @@ def generate_activation_code_resolver(obj, info, email, password):
     return {'Success': True, 'Token': 'Activation email sent'}
 
 
-def generate_auth_token(user_id, is_binance, is_bybit):
+def generate_auth_token(user_id, binance, bybit):
     try:
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=5),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id,
-            'binance': is_binance,
-            'bybit': is_bybit
+            'binance': binance,
+            'bybit': bybit
         }
         return True, jwt.encode(
             payload,
