@@ -1,5 +1,7 @@
 extend type Mutation {
   signUp(email: String!, password: String!): AuthPayload!
+  signIn(email: String!, password: String!): AuthPayload!
+  recoverPassword(email: String!): AuthPayload!
   activateAccount(
     email: String!
     password: String!
