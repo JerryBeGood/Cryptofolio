@@ -1,0 +1,14 @@
+extend type Mutation {
+  signUp(email: String!, password: String!): AuthPayload!
+  activateAccount(
+    email: String!
+    password: String!
+    code: String!
+  ): AuthPayload!
+  generateActivationCode(email: String!, password: String!): AuthPayload!
+}
+
+type AuthPayload {
+  Success: Boolean!
+  Token: String
+}

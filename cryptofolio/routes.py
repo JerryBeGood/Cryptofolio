@@ -1,12 +1,12 @@
-import cryptofolio as crypto
 from flask import request, jsonify
-from cryptofolio.graphql_api.schema import schema
+
 from ariadne import graphql_sync
 from ariadne.constants import PLAYGROUND_HTML
 
+from cryptofolio import app
+from cryptofolio.graphql_api.schema import schema
 
-# GraphQL API endpoints
-@crypto.app.route("/graphql", methods=["GET"])
+@app.route("/graphql", methods=["GET"])
 def graphql_playground():
     # On GET request serve GraphQL Playground
     # You don't need to provide Playground if you don't want to
@@ -15,7 +15,7 @@ def graphql_playground():
     return PLAYGROUND_HTML, 200
 
 
-@crypto.app.route("/graphql", methods=["POST"])
+@app.route("/graphql", methods=["POST"])
 def graphql_server():
     # GraphQL queries are always sent as POST
     data = request.get_json()
@@ -25,7 +25,7 @@ def graphql_server():
     success, result = graphql_sync(schema,
                                    data,
                                    context_value=request,
-                                   debug=crypto.app.debug)
+                                   debug=app.debug)
 
     status_code = 200 if success else 400
     return jsonify(result), status_code
