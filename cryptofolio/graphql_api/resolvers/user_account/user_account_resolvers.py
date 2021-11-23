@@ -57,7 +57,7 @@ def activate_account_resolver(obj, info, email, password, code):
     user.is_activated = True
     db.session.commit()
 
-    auth_token = generate_auth_token(user.id, user.binance, user.bybit)
+    auth_token = generate_auth_token(user)
 
     return {'Success': auth_token[0], 'Token': auth_token[1]}
 
@@ -93,14 +93,31 @@ def generate_activation_code_resolver(obj, info, email, password):
     return {'Success': True, 'Token': 'Activation email sent'}
 
 
-def generate_auth_token(user_id, binance, bybit):
+def sign_in_resolver(obj, info, email, password):
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return {'Success': False, 'Token': "Account doesn't exist"}
+
+    if not bcrypt.check_password_hash(user.password, password):
+        return {'Success': False, 'Token': 'Wrong password'}
+
+    if not user.is_activated:
+        return {'Success': False, 'Token': 'Account not yet activated'}
+
+    auth_token = generate_auth_token(user)
+
+    return {'Success': auth_token[0], 'Token': auth_token[1]}
+
+
+def generate_auth_token(user):
     try:
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=5),
             'iat': datetime.datetime.utcnow(),
-            'sub': user_id,
-            'binance': binance,
-            'bybit': bybit
+            'sub': user.id,
+            'binance': user.binance,
+            'bybit': user.bybit
         }
         return True, jwt.encode(
             payload,
