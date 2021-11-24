@@ -115,7 +115,13 @@ def generate_auth_token(user):
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=5),
             'iat': datetime.datetime.utcnow(),
+<<<<<<< HEAD
             'iss': user.id,
+=======
+            'sub': user.id,
+            'binance': user.binance,
+            'bybit': user.bybit
+>>>>>>> 6b26bb7298ad11160b483aeda9e624770535aab1
         }
         return True, jwt.encode(
             payload,
