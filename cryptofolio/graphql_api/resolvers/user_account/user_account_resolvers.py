@@ -111,7 +111,16 @@ def sign_in_resolver(obj, info, email, password):
 
 
 def account_status_resolver(obj, info, authToken):
-    pass
+    
+    with validate_token(authToken) as validation_payload:
+        if not validation_payload[0]:
+            return {'Success': validation_payload[0], 'Token': validation_payload[1]}
+
+        user_id = validation_payload[1]['iss']
+
+    user = User.query.filter_by(id=user_id)
+
+    return {'email': user.email, 'binance': user.binance, 'bybit': user.bybit}
 
 
 def validate_token(authToken):
