@@ -8,9 +8,16 @@ extend type Mutation {
     code: String!
   ): AuthPayload!
   generateActivationCode(email: String!, password: String!): AuthPayload!
+  accountStatus(authToken: String!): AccountStatus!
 }
 
 type AuthPayload {
   Success: Boolean!
   Token: String
+}
+
+type AccountStatus {
+  email: String!
+  binance: Boolean
+  bybit: Boolean
 }
