@@ -110,6 +110,41 @@ def sign_in_resolver(obj, info, email, password):
     return {'Success': auth_token[0], 'Token': auth_token[1]}
 
 
+def account_status_resolver(obj, info, authToken):
+    pass
+
+
+def validate_token(authToken):
+    try:
+        jwt_claims = jwt.decode(
+            jwt=authToken, 
+            key=app.config.get('SECRET_KEY'),
+            algorithms=['HS256'],
+            options={
+                'verify_signature': True,
+                'require': ['exp', 'iat', 'iss'],
+                'verify_exp': True,
+                'verify_iat': True
+            }
+            )
+    except jwt.exceptions.InvalidTokenError as error:
+        return False, error
+    except jwt.exceptions.DecodeError as error:
+        return False, error
+    except jwt.exceptions.ExpiredSignatureError as error:
+        return False, error
+    except jwt.exceptions.InvalidIssuedAtError as error:
+        return False, error
+    except jwt.exceptions.InvalidKeyError as error:
+        return False, error
+    except jwt.exceptions.InvalidAlgorithmError as error:
+        return False, error
+    except jwt.exceptions.MissingRequiredClaimError as error:
+        return False, error
+    else:
+        return True, jwt_claims
+
+
 def generate_auth_token(user):
     try:
         payload = {
