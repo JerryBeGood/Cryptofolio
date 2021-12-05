@@ -9,6 +9,12 @@ extend type Mutation {
   ): AuthPayload!
   generateActivationCode(email: String!, password: String!): AuthPayload!
   accountStatus(authToken: String!): AccountStatus!
+  addExchange(
+    API_key: String!
+    secret: String!
+    authToken: String!
+    exchange: Exchange!
+    ): AuthPayload!
 }
 
 type AuthPayload {
@@ -20,4 +26,9 @@ type AccountStatus {
   email: String!
   binance: Boolean
   bybit: Boolean
+}
+
+enum Exchange {
+  binance
+  bybit
 }

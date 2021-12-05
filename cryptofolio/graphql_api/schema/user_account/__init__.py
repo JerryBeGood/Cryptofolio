@@ -17,3 +17,5 @@ user_account_mutation.set_field('signIn',
                                 user_account.sign_in_resolver)
 user_account_mutation.set_field('accountStatus',
                                 user_account.account_status_resolver)
+user_account_mutation.set_field('addExchange',
+                                user_account.add_exchange_resolver)
