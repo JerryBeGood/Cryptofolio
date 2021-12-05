@@ -1,9 +1,14 @@
 import secrets
 import jwt
 import datetime
-from flask_mail import Message
+import time
+import hmac, hashlib
+import requests
 
-from cryptofolio.models import User, db
+from flask_mail import Message
+from cryptography.fernet import Fernet
+
+from cryptofolio.models import User, db, Exchange
 from cryptofolio import bcrypt, mail, app
 
 
@@ -122,6 +127,73 @@ def account_status_resolver(obj, info, authToken):
     return {'email': user.email, 'binance': user.binance, 'bybit': user.bybit}
 
 
+def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
+    
+    token_validation_payload = validate_token(authToken)
+
+    if not token_validation_payload[0]:
+        return {'Success': token_validation_payload[0], 'Token': token_validation_payload[1]}
+
+    exchange_validation_payload = validate_exchange_credentials(API_key, secret, exchange)
+
+    if not exchange_validation_payload[0]:
+        return {'Success': exchange_validation_payload[0], 'Token': exchange_validation_payload[1]}
+
+    user = User.query.filter_by(id=token_validation_payload[1]['iss']).first()
+
+    if exchange == 'binance':
+        if user.binance is True:
+            return {'Success': False, 'Token': 'Exchange credetnials already exist'}
+        else:
+            user.binance = True
+    elif exchange == 'bybit':
+        if user.bybit is True:
+            return {'Success': False, 'Token': 'Exchange credetnials already exist'}
+        else:
+            user.bybit = True
+
+    cipher_suite = Fernet(app.config.get('EXCHANGE_SECRET_KEY'))
+    
+    new_exchange = {
+        'user_id' : user.id,
+        'exchange': exchange,
+        'api_key': cipher_suite.encrypt(str.encode(API_key)),
+        'secret': cipher_suite.encrypt(str.encode(secret))
+    }
+
+    print(user.binance)
+    db.session.add(Exchange(**new_exchange))
+    db.session.commit()
+
+    return {'Success': True, 'Token': 'Exchange added to the account'}
+    
+
+def validate_exchange_credentials(API_key, secret, exchange):
+    
+    if exchange == 'binance':
+        recvWindow=5000
+        timestamp = int(round(time.time() * 1000))
+        request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
+        signature = hmac.new(secret.encode(),
+                            request_body.encode('UTF-8'),
+                            digestmod=hashlib.sha256).hexdigest()
+
+        with requests.get(f'https://testnet.binance.vision/api/v3/account',
+                        params={
+                            'recvWindow': recvWindow,
+                            'timestamp': timestamp,
+                            'signature': signature
+                        },
+                        headers={'X-MBX-APIKEY': API_key}) as response:
+            
+            if response.status_code == 200:
+                return True, response
+            else:
+                return False, response
+    else:
+        return False, 'ByBit not yet implemented'
+
+
 def validate_token(authToken):
     try:
         jwt_claims = jwt.decode(
@@ -136,19 +208,19 @@ def validate_token(authToken):
             }
             )
     except jwt.exceptions.InvalidTokenError as error:
-        return False, error
+        return False, str(error)
     except jwt.exceptions.DecodeError as error:
-        return False, error
+        return False, str(error)
     except jwt.exceptions.ExpiredSignatureError as error:
-        return False, error
+        return False, str(error)
     except jwt.exceptions.InvalidIssuedAtError as error:
-        return False, error
+        return False, str(error)
     except jwt.exceptions.InvalidKeyError as error:
-        return False, error
+        return False, str(error)
     except jwt.exceptions.InvalidAlgorithmError as error:
-        return False, error
+        return False, str(error)
     except jwt.exceptions.MissingRequiredClaimError as error:
-        return False, error
+        return False, str(error)
     else:
         return True, jwt_claims
 
@@ -158,13 +230,7 @@ def generate_auth_token(user):
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=5),
             'iat': datetime.datetime.utcnow(),
-<<<<<<< HEAD
             'iss': user.id,
-=======
-            'sub': user.id,
-            'binance': user.binance,
-            'bybit': user.bybit
->>>>>>> 6b26bb7298ad11160b483aeda9e624770535aab1
         }
         return True, jwt.encode(
             payload,
