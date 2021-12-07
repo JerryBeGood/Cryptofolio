@@ -7,3 +7,4 @@ from cryptofolio.graphql_api.schema.user_account import user_account_type_defs, 
 schema = make_executable_schema(
     [coingeko_typ_defs, binance_type_defs, user_account_type_defs],
     [coingeko_query, binance_query, binance_mutation, user_account_mutation])
+

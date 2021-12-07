@@ -18,3 +18,12 @@ class User(db.Model):
     activation_code = db.Column(db.String(8), nullable=False)
     binance = db.Column(db.Boolean, nullable=False)
     bybit = db.Column(db.Boolean, nullable=False)
+
+
+class Exchange(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+        nullable=False) 
+    exchange = db.Column(db.String(10), nullable=False)
+    api_key = db.Column(db.Text, unique=True, nullable=False)
+    secret = db.Column(db.Text, unique=True, nullable=False)

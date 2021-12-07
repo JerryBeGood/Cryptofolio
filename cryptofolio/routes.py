@@ -1,4 +1,5 @@
 from flask import request, jsonify
+
 from ariadne import graphql_sync
 from ariadne.constants import PLAYGROUND_HTML
 
