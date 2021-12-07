@@ -15,6 +15,11 @@ extend type Mutation {
     exchange: Exchange!
     ): AuthPayload!
   generatePswdRecoveryCode(email: String!): AuthPayload!
+  recoverPassword(
+    email: String!
+    password: String!
+    code: String!
+  ): AuthPayload!
 }
 
 type AuthPayload {
