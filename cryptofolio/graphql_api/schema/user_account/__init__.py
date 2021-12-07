@@ -19,3 +19,5 @@ user_account_mutation.set_field('accountStatus',
                                 user_account.account_status_resolver)
 user_account_mutation.set_field('addExchange',
                                 user_account.add_exchange_resolver)
+user_account_mutation.set_field('generatePswdRecoveryCode',
+                                user_account.generate_pswd_recovery_code_resolver)
