@@ -1,7 +1,6 @@
 extend type Mutation {
   signUp(email: String!, password: String!): AuthPayload!
   signIn(email: String!, password: String!): AuthPayload!
-  recoverPassword(email: String!): AuthPayload!
   activateAccount(
     email: String!
     password: String!
@@ -15,6 +14,7 @@ extend type Mutation {
     authToken: String!
     exchange: Exchange!
     ): AuthPayload!
+  generatePswdRecoveryCode(email: String!): AuthPayload!
 }
 
 type AuthPayload {
