@@ -8,7 +8,7 @@ import requests
 from flask_mail import Message
 from cryptography.fernet import Fernet
 
-from cryptofolio.models import User, db, Exchange
+from cryptofolio.models import User, db, Exchange, Code
 from cryptofolio import bcrypt, mail, app
 
 
@@ -167,6 +167,46 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
 
     return {'Success': True, 'Token': 'Exchange added to the account'}
     
+
+def generate_pswd_recovery_code_resolver(obj, info, email):
+
+    # Check whether email adress exists in db
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return {'Success': False, 'Token': "Account doesn't exist"}
+
+    # Generate recovery code
+    recovery_code = {
+        "user_id": user.id,
+        "type": "recovery",
+        "code": secrets.randbelow(99999),
+        "timestamp": int(datetime.datetime.utcnow().timestamp())
+    }
+
+    # Save it to db
+    try:
+        db.session.add(Code(**recovery_code))
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
+
+    # Send it to user
+    try:
+        msg = Message(
+            'Cryptofolio - password recovery code',
+            recipients=[user.email],
+            body=f'{recovery_code["code"]}',
+            sender=("Cryptofolio", 'cryptofolio.service@gmail.com')
+        )
+        mail.send(msg)
+    except Exception as error:
+        return {'Success': False, 'Token': error}
+
+    # Respond to app
+    return {'Success': True, 'Token': 'Recovery code sent'}
+
 
 def validate_exchange_credentials(API_key, secret, exchange):
     
