@@ -177,6 +177,15 @@ def generate_pswd_recovery_code_resolver(obj, info, email):
         return {'Success': False, 'Token': "Account doesn't exist"}
 
     # Generate recovery code
+    recovery_code = Code.query.filter_by(user_id=user.id).filter_by(type='recovery').first()
+    if recovery_code:
+        try:
+            db.session.delete(recovery_code)
+            db.session.commit()
+        except Exception as error:
+            print(str(error))
+            return {'Success': False, 'Token': 'Database error'}
+
     recovery_code = {
         "user_id": user.id,
         "type": "recovery",
@@ -207,6 +216,35 @@ def generate_pswd_recovery_code_resolver(obj, info, email):
     # Respond to app
     return {'Success': True, 'Token': 'Recovery code sent'}
 
+
+def recover_password_resolver(obj, info, email, password, code):
+
+    # Check whether email adress exists in db
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return {'Success': False, 'Token': "Account doesn't exist"}
+
+    # Validate code & delete it
+    recovery_code = Code.query.filter_by(user_id=user.id).filter_by(type='recovery').first()
+    if not recovery_code:
+        return {'Success': False, 'Token': 'Wrong recovery code'}
+    elif recovery_code.timestamp - int(datetime.datetime.utcnow().timestamp()) < -300000:
+        db.session.delete(recovery_code)
+        db.session.commit()
+        return {'Success': False, 'Token': 'Recovery code overdue'}
+
+    # Save new password to db
+    try:
+        user.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        db.session.delete(recovery_code)
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
+
+    # Send confimration
+    return {'Success': True, 'Token': 'Password changed'}
+    
 
 def validate_exchange_credentials(API_key, secret, exchange):
     
