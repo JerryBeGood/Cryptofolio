@@ -2,7 +2,8 @@ import secrets
 import jwt
 import datetime
 import time
-import hmac, hashlib
+import hmac
+import hashlib
 import requests
 
 from flask_mail import Message
@@ -17,28 +18,43 @@ def sign_up_resolver(obj, info, email, password):
     if User.query.filter_by(email=email).first():
         return {'Success': False, 'Token': 'Account already exists'}
 
-    new_user = {
+    # TODO
+    user = User(**{
         'email': email,
         'password': bcrypt.generate_password_hash(password).decode('utf-8'),
         'is_activated': False,
-        'activation_code': secrets.randbelow(99999),
         'binance': False,
         'bybit': False
-    }
+    })
+    db.session.add(user)
+    db.session.flush()
 
+    activation_code = {
+        'user_id': user.id,
+        'type': 'activation',
+        'code': secrets.choice(range(10001, 99999)),
+        'timestamp': int(datetime.datetime.utcnow().timestamp()),
+    }
+    db.session.add(Code(**activation_code))
+
+    try:
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': True, 'Token': 'Database error'}
+
+    # TODO
     try:
         msg = Message(
             'Cryptofolio - activation code',
-            recipients=[new_user['email']],
-            body=f'{new_user["activation_code"]}',
+            recipients=[user.email],
+            body=f'{activation_code["code"]}',
             sender=("Cryptofolio", 'cryptofolio.service@gmail.com')
         )
         mail.send(msg)
     except Exception as error:
-        return {'Success': False, 'Token': error}
-
-    db.session.add(User(**new_user))
-    db.session.commit()
+        print(str(error))
+        return {'Success': False, 'Token': 'Activation mail error'}
 
     return {'Success': True, 'Token': 'Activation email sent'}
 
@@ -56,11 +72,17 @@ def activate_account_resolver(obj, info, email, password, code):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
-    if user.activation_code != code:
-        return {'Success': False, 'Token': 'Wrong activation code'}
+    # TODO
+    code_validation = code_auth(user, 'activation', code)
+    if not code_validation[0]:
+        return {'Success': code_validation[0], 'Token': code_validation[1]}
 
-    user.is_activated = True
-    db.session.commit()
+    try:
+        user.is_activated = True
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
 
     auth_token = generate_auth_token(user)
 
@@ -79,7 +101,23 @@ def generate_activation_code_resolver(obj, info, email, password):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
-    activation_code = secrets.randbelow(99999)
+    activation_code = Code.query.filter_by(user_id=user.id).filter_by(type='activation').first()
+    if activation_code:
+        db.session.delete(activation_code)
+
+    activation_code = {
+        'user_id': user.id,
+        'type': 'activation',
+        'code': secrets.choice(range(10001, 99999)),
+        'timestamp': int(datetime.datetime.utcnow().timestamp()),
+    }
+
+    try:
+        db.session.add(Code(**activation_code))
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
 
     try:
         msg = Message(
@@ -92,9 +130,6 @@ def generate_activation_code_resolver(obj, info, email, password):
     except Exception as error:
         return {'Success': False, 'Token': error}
 
-    user.activation_code = activation_code
-    db.session.commit()
-    
     return {'Success': True, 'Token': 'Activation email sent'}
 
 
@@ -116,9 +151,9 @@ def sign_in_resolver(obj, info, email, password):
 
 
 def account_status_resolver(obj, info, authToken):
-    
+
     validation_payload = validate_token(authToken)
-    
+
     if not validation_payload[0]:
         return {'Success': validation_payload[0], 'Token': validation_payload[1]}
 
@@ -128,13 +163,14 @@ def account_status_resolver(obj, info, authToken):
 
 
 def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
-    
+
     token_validation_payload = validate_token(authToken)
 
     if not token_validation_payload[0]:
         return {'Success': token_validation_payload[0], 'Token': token_validation_payload[1]}
 
-    exchange_validation_payload = validate_exchange_credentials(API_key, secret, exchange)
+    exchange_validation_payload = validate_exchange_credentials(
+        API_key, secret, exchange)
 
     if not exchange_validation_payload[0]:
         return {'Success': exchange_validation_payload[0], 'Token': exchange_validation_payload[1]}
@@ -153,9 +189,9 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
             user.bybit = True
 
     cipher_suite = Fernet(app.config.get('EXCHANGE_SECRET_KEY'))
-    
+
     new_exchange = {
-        'user_id' : user.id,
+        'user_id': user.id,
         'exchange': exchange,
         'api_key': cipher_suite.encrypt(str.encode(API_key)),
         'secret': cipher_suite.encrypt(str.encode(secret))
@@ -166,7 +202,7 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
     db.session.commit()
 
     return {'Success': True, 'Token': 'Exchange added to the account'}
-    
+
 
 def generate_pswd_recovery_code_resolver(obj, info, email):
 
@@ -177,7 +213,8 @@ def generate_pswd_recovery_code_resolver(obj, info, email):
         return {'Success': False, 'Token': "Account doesn't exist"}
 
     # Generate recovery code
-    recovery_code = Code.query.filter_by(user_id=user.id).filter_by(type='recovery').first()
+    recovery_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type='recovery').first()
     if recovery_code:
         try:
             db.session.delete(recovery_code)
@@ -189,7 +226,7 @@ def generate_pswd_recovery_code_resolver(obj, info, email):
     recovery_code = {
         "user_id": user.id,
         "type": "recovery",
-        "code": secrets.randbelow(99999),
+        "code": secrets.choice(range(10001, 99999)),
         "timestamp": int(datetime.datetime.utcnow().timestamp())
     }
 
@@ -225,7 +262,8 @@ def recover_password_resolver(obj, info, email, password, code):
         return {'Success': False, 'Token': "Account doesn't exist"}
 
     # Validate code & delete it
-    recovery_code = Code.query.filter_by(user_id=user.id).filter_by(type='recovery').first()
+    recovery_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type='recovery').first()
     if not recovery_code:
         return {'Success': False, 'Token': 'Wrong recovery code'}
     elif recovery_code.timestamp - int(datetime.datetime.utcnow().timestamp()) < -300000:
@@ -244,26 +282,26 @@ def recover_password_resolver(obj, info, email, password, code):
 
     # Send confimration
     return {'Success': True, 'Token': 'Password changed'}
-    
+
 
 def validate_exchange_credentials(API_key, secret, exchange):
-    
+
     if exchange == 'binance':
-        recvWindow=5000
+        recvWindow = 5000
         timestamp = int(round(time.time() * 1000))
         request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
         signature = hmac.new(secret.encode(),
-                            request_body.encode('UTF-8'),
-                            digestmod=hashlib.sha256).hexdigest()
+                             request_body.encode('UTF-8'),
+                             digestmod=hashlib.sha256).hexdigest()
 
         with requests.get(f'https://testnet.binance.vision/api/v3/account',
-                        params={
-                            'recvWindow': recvWindow,
-                            'timestamp': timestamp,
-                            'signature': signature
-                        },
-                        headers={'X-MBX-APIKEY': API_key}) as response:
-            
+                          params={
+                              'recvWindow': recvWindow,
+                              'timestamp': timestamp,
+                              'signature': signature
+                          },
+                          headers={'X-MBX-APIKEY': API_key}) as response:
+
             if response.status_code == 200:
                 return True, response
             else:
@@ -275,7 +313,7 @@ def validate_exchange_credentials(API_key, secret, exchange):
 def validate_token(authToken):
     try:
         jwt_claims = jwt.decode(
-            jwt=authToken, 
+            jwt=authToken,
             key=app.config.get('SECRET_KEY'),
             algorithms=['HS256'],
             options={
@@ -284,7 +322,7 @@ def validate_token(authToken):
                 'verify_exp': True,
                 'verify_iat': True
             }
-            )
+        )
     except jwt.exceptions.InvalidTokenError as error:
         return False, str(error)
     except jwt.exceptions.DecodeError as error:
@@ -317,3 +355,18 @@ def generate_auth_token(user):
         )
     except Exception as e:
         return False, e
+
+
+def code_auth(user, type, code):
+    the_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type=type).first()
+    if not the_code:
+        False, f'Wrong {type} code'
+    elif the_code.timestamp - int(datetime.datetime.utcnow().timestamp()) < -300000:
+        db.session.delete(the_code)
+        db.session.commit()
+        return False, f'{type} code overdue'
+    else:
+        db.session.delete(the_code)
+        db.session.commit()
+        return True, 'Ok'
