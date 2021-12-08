@@ -16,7 +16,6 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), unique=True, nullable=False)
     is_activated = db.Column(db.Boolean, nullable=False)
-    activation_code = db.Column(db.String(8), nullable=False)
     binance = db.Column(db.Boolean, nullable=False)
     bybit = db.Column(db.Boolean, nullable=False)
 
