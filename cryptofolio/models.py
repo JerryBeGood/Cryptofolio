@@ -1,3 +1,4 @@
+from enum import unique
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -27,3 +28,11 @@ class Exchange(db.Model):
     exchange = db.Column(db.String(10), nullable=False)
     api_key = db.Column(db.Text, unique=True, nullable=False)
     secret = db.Column(db.Text, unique=True, nullable=False)
+
+
+class Code(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
+    type = db.Column(db.String(20), nullable=False)
+    code = db.Column(db.String(5), nullable=False)
+    timestamp = db.Column(db.BigInteger, nullable=False)
