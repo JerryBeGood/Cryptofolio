@@ -18,28 +18,43 @@ def sign_up_resolver(obj, info, email, password):
     if User.query.filter_by(email=email).first():
         return {'Success': False, 'Token': 'Account already exists'}
 
-    new_user = {
+    # TODO
+    user = User(**{
         'email': email,
         'password': bcrypt.generate_password_hash(password).decode('utf-8'),
         'is_activated': False,
-        'activation_code': secrets.randbelow(99999),
         'binance': False,
         'bybit': False
-    }
+    })
+    db.session.add(user)
+    db.session.flush()
 
+    activation_code = {
+        'user_id': user.id,
+        'type': 'activation',
+        'code': secrets.randbelow(99999),
+        'timestamp': int(datetime.datetime.utcnow().timestamp()),
+    }
+    db.session.add(Code(**activation_code))
+
+    try:
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': True, 'Token': 'Database error'}
+
+    # TODO
     try:
         msg = Message(
             'Cryptofolio - activation code',
-            recipients=[new_user['email']],
-            body=f'{new_user["activation_code"]}',
+            recipients=[user.email],
+            body=f'{activation_code["code"]}',
             sender=("Cryptofolio", 'cryptofolio.service@gmail.com')
         )
         mail.send(msg)
     except Exception as error:
-        return {'Success': False, 'Token': error}
-
-    db.session.add(User(**new_user))
-    db.session.commit()
+        print(str(error))
+        return {'Success': False, 'Token': 'Activation mail error'}
 
     return {'Success': True, 'Token': 'Activation email sent'}
 
@@ -57,6 +72,7 @@ def activate_account_resolver(obj, info, email, password, code):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
+    # TODO
     if user.activation_code != code:
         return {'Success': False, 'Token': 'Wrong activation code'}
 
@@ -93,6 +109,7 @@ def generate_activation_code_resolver(obj, info, email, password):
     except Exception as error:
         return {'Success': False, 'Token': error}
 
+    # TODO
     user.activation_code = activation_code
     db.session.commit()
 
