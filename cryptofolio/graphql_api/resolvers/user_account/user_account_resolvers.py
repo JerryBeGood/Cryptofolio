@@ -101,7 +101,23 @@ def generate_activation_code_resolver(obj, info, email, password):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
-    activation_code = secrets.choice(range(10001, 99999))
+    activation_code = Code.query.filter_by(user_id=user.id).filter_by(type='activation').first()
+    if activation_code:
+        db.session.delete(activation_code)
+
+    activation_code = {
+        'user_id': user.id,
+        'type': 'activation',
+        'code': secrets.choice(range(10001, 99999)),
+        'timestamp': int(datetime.datetime.utcnow().timestamp()),
+    }
+
+    try:
+        db.session.add(Code(**activation_code))
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
 
     try:
         msg = Message(
@@ -113,10 +129,6 @@ def generate_activation_code_resolver(obj, info, email, password):
         mail.send(msg)
     except Exception as error:
         return {'Success': False, 'Token': error}
-
-    # TODO
-    user.activation_code = activation_code
-    db.session.commit()
 
     return {'Success': True, 'Token': 'Activation email sent'}
 
