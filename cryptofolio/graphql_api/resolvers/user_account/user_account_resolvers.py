@@ -32,7 +32,7 @@ def sign_up_resolver(obj, info, email, password):
     activation_code = {
         'user_id': user.id,
         'type': 'activation',
-        'code': secrets.randbelow(99999),
+        'code': secrets.choice(range(10001, 99999)),
         'timestamp': int(datetime.datetime.utcnow().timestamp()),
     }
     db.session.add(Code(**activation_code))
@@ -73,11 +73,16 @@ def activate_account_resolver(obj, info, email, password, code):
         return {'Success': False, 'Token': 'Account already activated'}
 
     # TODO
-    if user.activation_code != code:
-        return {'Success': False, 'Token': 'Wrong activation code'}
+    code_validation = code_auth(user, 'activation', code)
+    if not code_validation[0]:
+        return {'Success': code_validation[0], 'Token': code_validation[1]}
 
-    user.is_activated = True
-    db.session.commit()
+    try:
+        user.is_activated = True
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
 
     auth_token = generate_auth_token(user)
 
@@ -96,7 +101,7 @@ def generate_activation_code_resolver(obj, info, email, password):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
-    activation_code = secrets.randbelow(99999)
+    activation_code = secrets.choice(range(10001, 99999))
 
     try:
         msg = Message(
@@ -209,7 +214,7 @@ def generate_pswd_recovery_code_resolver(obj, info, email):
     recovery_code = {
         "user_id": user.id,
         "type": "recovery",
-        "code": secrets.randbelow(99999),
+        "code": secrets.choice(range(10001, 99999)),
         "timestamp": int(datetime.datetime.utcnow().timestamp())
     }
 
@@ -338,3 +343,18 @@ def generate_auth_token(user):
         )
     except Exception as e:
         return False, e
+
+
+def code_auth(user, type, code):
+    the_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type=type).first()
+    if not the_code:
+        False, f'Wrong {type} code'
+    elif the_code.timestamp - int(datetime.datetime.utcnow().timestamp()) < -300000:
+        db.session.delete(the_code)
+        db.session.commit()
+        return False, f'{type} code overdue'
+    else:
+        db.session.delete(the_code)
+        db.session.commit()
+        return True, 'Ok'
