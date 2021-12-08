@@ -284,6 +284,26 @@ def recover_password_resolver(obj, info, email, password, code):
     return {'Success': True, 'Token': 'Password changed'}
 
 
+def delete_account_resolver(obj, info, authToken):
+
+    validation_payload = validate_token(authToken)
+
+    if not validation_payload[0]:
+        return {'Success': validation_payload[0], 'Token': validation_payload[1]}
+
+    user = User.query.filter_by(id=validation_payload[1]['iss']).first()
+
+    try:
+        Code.query.filter_by(user_id=user.id).delete()
+        Exchange.query.filter_by(user_id=user.id).delete()
+        db.session.delete(user)
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
+
+    return {'Success': True, 'Token': 'Account deleted'}
+
 def validate_exchange_credentials(API_key, secret, exchange):
 
     if exchange == 'binance':
