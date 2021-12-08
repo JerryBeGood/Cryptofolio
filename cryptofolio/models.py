@@ -24,7 +24,7 @@ class User(db.Model):
 class Exchange(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
-        nullable=False) 
+                        nullable=False)
     exchange = db.Column(db.String(10), nullable=False)
     api_key = db.Column(db.Text, unique=True, nullable=False)
     secret = db.Column(db.Text, unique=True, nullable=False)
@@ -32,7 +32,7 @@ class Exchange(db.Model):
 
 class Code(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     type = db.Column(db.String(20), nullable=False)
     code = db.Column(db.String(5), nullable=False)
     timestamp = db.Column(db.BigInteger, nullable=False)

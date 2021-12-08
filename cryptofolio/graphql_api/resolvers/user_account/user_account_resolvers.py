@@ -2,7 +2,8 @@ import secrets
 import jwt
 import datetime
 import time
-import hmac, hashlib
+import hmac
+import hashlib
 import requests
 
 from flask_mail import Message
@@ -94,7 +95,7 @@ def generate_activation_code_resolver(obj, info, email, password):
 
     user.activation_code = activation_code
     db.session.commit()
-    
+
     return {'Success': True, 'Token': 'Activation email sent'}
 
 
@@ -116,9 +117,9 @@ def sign_in_resolver(obj, info, email, password):
 
 
 def account_status_resolver(obj, info, authToken):
-    
+
     validation_payload = validate_token(authToken)
-    
+
     if not validation_payload[0]:
         return {'Success': validation_payload[0], 'Token': validation_payload[1]}
 
@@ -128,13 +129,14 @@ def account_status_resolver(obj, info, authToken):
 
 
 def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
-    
+
     token_validation_payload = validate_token(authToken)
 
     if not token_validation_payload[0]:
         return {'Success': token_validation_payload[0], 'Token': token_validation_payload[1]}
 
-    exchange_validation_payload = validate_exchange_credentials(API_key, secret, exchange)
+    exchange_validation_payload = validate_exchange_credentials(
+        API_key, secret, exchange)
 
     if not exchange_validation_payload[0]:
         return {'Success': exchange_validation_payload[0], 'Token': exchange_validation_payload[1]}
@@ -153,9 +155,9 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
             user.bybit = True
 
     cipher_suite = Fernet(app.config.get('EXCHANGE_SECRET_KEY'))
-    
+
     new_exchange = {
-        'user_id' : user.id,
+        'user_id': user.id,
         'exchange': exchange,
         'api_key': cipher_suite.encrypt(str.encode(API_key)),
         'secret': cipher_suite.encrypt(str.encode(secret))
@@ -166,7 +168,7 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
     db.session.commit()
 
     return {'Success': True, 'Token': 'Exchange added to the account'}
-    
+
 
 def generate_pswd_recovery_code_resolver(obj, info, email):
 
@@ -177,7 +179,8 @@ def generate_pswd_recovery_code_resolver(obj, info, email):
         return {'Success': False, 'Token': "Account doesn't exist"}
 
     # Generate recovery code
-    recovery_code = Code.query.filter_by(user_id=user.id).filter_by(type='recovery').first()
+    recovery_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type='recovery').first()
     if recovery_code:
         try:
             db.session.delete(recovery_code)
@@ -225,7 +228,8 @@ def recover_password_resolver(obj, info, email, password, code):
         return {'Success': False, 'Token': "Account doesn't exist"}
 
     # Validate code & delete it
-    recovery_code = Code.query.filter_by(user_id=user.id).filter_by(type='recovery').first()
+    recovery_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type='recovery').first()
     if not recovery_code:
         return {'Success': False, 'Token': 'Wrong recovery code'}
     elif recovery_code.timestamp - int(datetime.datetime.utcnow().timestamp()) < -300000:
@@ -244,26 +248,26 @@ def recover_password_resolver(obj, info, email, password, code):
 
     # Send confimration
     return {'Success': True, 'Token': 'Password changed'}
-    
+
 
 def validate_exchange_credentials(API_key, secret, exchange):
-    
+
     if exchange == 'binance':
-        recvWindow=5000
+        recvWindow = 5000
         timestamp = int(round(time.time() * 1000))
         request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
         signature = hmac.new(secret.encode(),
-                            request_body.encode('UTF-8'),
-                            digestmod=hashlib.sha256).hexdigest()
+                             request_body.encode('UTF-8'),
+                             digestmod=hashlib.sha256).hexdigest()
 
         with requests.get(f'https://testnet.binance.vision/api/v3/account',
-                        params={
-                            'recvWindow': recvWindow,
-                            'timestamp': timestamp,
-                            'signature': signature
-                        },
-                        headers={'X-MBX-APIKEY': API_key}) as response:
-            
+                          params={
+                              'recvWindow': recvWindow,
+                              'timestamp': timestamp,
+                              'signature': signature
+                          },
+                          headers={'X-MBX-APIKEY': API_key}) as response:
+
             if response.status_code == 200:
                 return True, response
             else:
@@ -275,7 +279,7 @@ def validate_exchange_credentials(API_key, secret, exchange):
 def validate_token(authToken):
     try:
         jwt_claims = jwt.decode(
-            jwt=authToken, 
+            jwt=authToken,
             key=app.config.get('SECRET_KEY'),
             algorithms=['HS256'],
             options={
@@ -284,7 +288,7 @@ def validate_token(authToken):
                 'verify_exp': True,
                 'verify_iat': True
             }
-            )
+        )
     except jwt.exceptions.InvalidTokenError as error:
         return False, str(error)
     except jwt.exceptions.DecodeError as error:
