@@ -20,6 +20,7 @@ extend type Mutation {
     password: String!
     code: String!
   ): AuthPayload!
+  deleteAccount(authToken: String!): AuthPayload!
 }
 
 type AuthPayload {
