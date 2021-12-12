@@ -24,4 +24,7 @@ user_account_mutation.set_field('generatePswdRecoveryCode',
 user_account_mutation.set_field('recoverPassword',
                                 user_account.recover_password_resolver)
 user_account_mutation.set_field('deleteAccount',
-                                user_account.delete_account_resolver)             
+                                user_account.delete_account_resolver)        
+user_account_mutation.set_field('changePassword',
+                                user_account.change_password_resolver)
+                                
