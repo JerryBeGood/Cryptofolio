@@ -312,13 +312,18 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
         return {'Success': token_validation_payload[0], 'Token': token_validation_payload[1]}
 
     # validate existance of a exchange
+    user = User.query.filter_by(id=token_validation_payload[1]['iss']).first()
     exchange = Exchange.query.filter_by(
-        user_id=token_validation_payload[1]['iss']).filter_by(exchange=exchange).first()
+        user_id=user.id).filter_by(exchange=exchange).first()
     if not exchange:
         return {'Success': False, 'Token': "No such exchange connected to the account"}
 
     # delete exchange
     try:
+        if exchange == 'binance':
+            user.binance = False
+        else:
+            user.bybit = False
         db.session.delete(exchange)
         db.session.commit()
     except Exception as error:
@@ -381,6 +386,8 @@ def validate_token(authToken):
     except jwt.exceptions.InvalidAlgorithmError as error:
         return False, str(error)
     except jwt.exceptions.MissingRequiredClaimError as error:
+        return False, str(error)
+    except Exception as error:
         return False, str(error)
     else:
         return True, jwt_claims
