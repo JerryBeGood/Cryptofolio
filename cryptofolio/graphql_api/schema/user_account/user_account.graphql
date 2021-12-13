@@ -22,6 +22,7 @@ extend type Mutation {
   ): AuthPayload!
   deleteAccount(authToken: String!): AuthPayload!
   changePassword(authToken: String!, password: String!): AuthPayload!
+  deleteExchange(authToken: String!, exchange: Exchange!): AuthPayload!
 }
 
 type AuthPayload {

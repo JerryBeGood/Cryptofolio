@@ -101,7 +101,8 @@ def generate_activation_code_resolver(obj, info, email, password):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
-    activation_code = Code.query.filter_by(user_id=user.id).filter_by(type='activation').first()
+    activation_code = Code.query.filter_by(
+        user_id=user.id).filter_by(type='activation').first()
     if activation_code:
         db.session.delete(activation_code)
 
@@ -165,13 +166,11 @@ def account_status_resolver(obj, info, authToken):
 def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
 
     token_validation_payload = validate_token(authToken)
-
     if not token_validation_payload[0]:
         return {'Success': token_validation_payload[0], 'Token': token_validation_payload[1]}
 
     exchange_validation_payload = validate_exchange_credentials(
         API_key, secret, exchange)
-
     if not exchange_validation_payload[0]:
         return {'Success': exchange_validation_payload[0], 'Token': exchange_validation_payload[1]}
 
@@ -318,8 +317,38 @@ def change_password_resolver(obj, info, authToken, password):
     except Exception as error:
         print(str(error))
         return {'Success': False, 'Token': 'Database error'}
-
+    
     return {'Success': True, 'Token': 'Password changed'}
+
+
+def delete_exchange_resolver(obj, info, authToken, exchange):
+
+    # validate jwt
+    token_validation_payload = validate_token(authToken)
+    if not token_validation_payload[0]:
+        return {'Success': token_validation_payload[0], 'Token': token_validation_payload[1]}
+
+    # validate existance of a exchange
+    user = User.query.filter_by(id=token_validation_payload[1]['iss']).first()
+    exchange = Exchange.query.filter_by(
+        user_id=user.id).filter_by(exchange=exchange).first()
+    if not exchange:
+        return {'Success': False, 'Token': "No such exchange connected to the account"}
+
+    # delete exchange
+    try:
+        if exchange == 'binance':
+            user.binance = False
+        else:
+            user.bybit = False
+        db.session.delete(exchange)
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
+    
+    # return status
+    return {'Succes': True, 'Token': 'Exchange deleted successfully'}
 
 
 def validate_exchange_credentials(API_key, secret, exchange):
@@ -374,6 +403,8 @@ def validate_token(authToken):
     except jwt.exceptions.InvalidAlgorithmError as error:
         return False, str(error)
     except jwt.exceptions.MissingRequiredClaimError as error:
+        return False, str(error)
+    except Exception as error:
         return False, str(error)
     else:
         return True, jwt_claims
