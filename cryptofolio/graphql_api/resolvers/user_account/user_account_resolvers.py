@@ -286,7 +286,6 @@ def recover_password_resolver(obj, info, email, password, code):
 def delete_account_resolver(obj, info, authToken):
 
     validation_payload = validate_token(authToken)
-
     if not validation_payload[0]:
         return {'Success': validation_payload[0], 'Token': validation_payload[1]}
 
@@ -302,6 +301,24 @@ def delete_account_resolver(obj, info, authToken):
         return {'Success': False, 'Token': 'Database error'}
 
     return {'Success': True, 'Token': 'Account deleted'}
+
+
+def change_password_resolver(obj, info, authToken, password):
+
+    # validate jwt
+    validation_payload = validate_token(authToken)
+    if not validation_payload[0]:
+        return {'Success': validation_payload[0], 'Token': validation_payload[1]}
+
+    try:
+        user = User.query.filter_by(id=validation_payload[1]['iss']).first()
+        user.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
+    
+    return {'Success': True, 'Token': 'Password changed'}
 
 
 def delete_exchange_resolver(obj, info, authToken, exchange):
@@ -329,7 +346,7 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
     except Exception as error:
         print(str(error))
         return {'Success': False, 'Token': 'Database error'}
-
+    
     # return status
     return {'Succes': True, 'Token': 'Exchange deleted successfully'}
 
