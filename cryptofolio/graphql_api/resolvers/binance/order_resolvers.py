@@ -1,48 +1,45 @@
 import requests
 import time
-import hmac, hashlib
+import hmac
+import hashlib
+
+from .order_utility import prepare_stop_loss_order_request_body, prepare_stop_loss_order_params
+
+from cryptofolio.utilities import validate_token, fetch_exchange_credentials
 
 
-def binance_spot_stop_loss_limit_order_resolver(obj, info, API_key, secret,
+def binance_spot_stop_loss_limit_order_resolver(obj, info, authToken,
                                                 order):
+    # Prepare request body
     payload = {}
-    params = {}
-    request_body = ''
     timestamp = int(round(time.time() * 1000))
+    params = prepare_stop_loss_order_params(order, timestamp)
+    request_body = prepare_stop_loss_order_request_body(order, timestamp)
 
-    if 'icebergQty' in order.keys():
-        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=STOP_LOSS_LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&stopPrice={order["stopPrice"]}&newOrderRespType=RESULT&timestamp={timestamp}'
-        params['symbol'] = order["symbol"]
-        params['side'] = order["side"]
-        params['type'] = 'STOP_LOSS_LIMIT'
-        params['icebergQty'] = order['icebergQty']
-        params['quantity'] = order['quantity']
-        params['timeInForce'] = order['timeInForce']
-        params['price'] = order['price']
-        params['stopPrice'] = order['stopPrice']
-        params['newOrderRespType'] = 'RESULT'
-        params['timestamp'] = timestamp
-    else:
-        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=STOP_LOSS_LIMIT&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&stopPrice={order["stopPrice"]}&newOrderRespType=RESULT&timestamp={timestamp}'
-        params['symbol'] = order["symbol"]
-        params['side'] = order["side"]
-        params['type'] = 'STOP_LOSS_LIMIT'
-        params['quantity'] = order['quantity']
-        params['timeInForce'] = order['timeInForce']
-        params['price'] = order['price']
-        params['stopPrice'] = order['stopPrice']
-        params['newOrderRespType'] = 'RESULT'
-        params['timestamp'] = timestamp
-    signature = hmac.new(secret.encode(),
+    # Validate token
+    token_validation_payload = validate_token(authToken)
+    print(token_validation_payload)
+    if not token_validation_payload[0]:
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+
+    # Fetch exchange credentials
+    exchange_credentials = fetch_exchange_credentials(
+        token_validation_payload[1], 'binance')
+    print(exchange_credentials)
+    if not exchange_credentials[0]:
+        return {'succes': False, 'msg': exchange_credentials[1]}
+
+    # Preapre signature
+    signature = hmac.new(exchange_credentials[2].encode(),
                          request_body.encode('UTF-8'),
                          digestmod=hashlib.sha256).hexdigest()
-
     params['signature'] = signature
 
+    # Make a request
     with requests.post('https://testnet.binance.vision/api/v3/order',
                        params=params,
                        headers={
-                           'X-MBX-APIKEY': API_key,
+                           'X-MBX-APIKEY': exchange_credentials[1],
                            'content-type': 'application/x-www-form-urlencoded'
                        }) as response:
 
