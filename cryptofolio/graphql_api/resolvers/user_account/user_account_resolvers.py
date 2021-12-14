@@ -192,8 +192,8 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
     new_exchange = {
         'user_id': user.id,
         'exchange': exchange,
-        'api_key': cipher_suite.encrypt(str.encode(API_key)),
-        'secret': cipher_suite.encrypt(str.encode(secret))
+        'api_key': cipher_suite.encrypt(str.encode(API_key)).decode('utf-8'),
+        'secret': cipher_suite.encrypt(str.encode(secret)).decode('utf-8')
     }
 
     print(user.binance)
@@ -348,7 +348,7 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
         return {'Success': False, 'Token': 'Database error'}
     
     # return status
-    return {'Succes': True, 'Token': 'Exchange deleted successfully'}
+    return {'Success': True, 'Token': 'Exchange deleted successfully'}
 
 
 def validate_exchange_credentials(API_key, secret, exchange):
