@@ -192,8 +192,8 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
     new_exchange = {
         'user_id': user.id,
         'exchange': exchange,
-        'api_key': cipher_suite.encrypt(str.encode(API_key)).decode('utf-8'),
-        'secret': cipher_suite.encrypt(str.encode(secret)).decode('utf-8')
+        'api_key': cipher_suite.encrypt(str.encode(API_key)),
+        'secret': cipher_suite.encrypt(str.encode(secret))
     }
 
     print(user.binance)
@@ -413,7 +413,7 @@ def validate_token(authToken):
 def generate_auth_token(user):
     try:
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=5),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=60),
             'iat': datetime.datetime.utcnow(),
             'iss': user.id,
         }
