@@ -1,3 +1,30 @@
+import requests
+
+
+def make_order(params, api_key):
+
+    payload = {}
+
+    with requests.post('https://testnet.binance.vision/api/v3/order',
+                       params=params,
+                       headers={
+                           'X-MBX-APIKEY': api_key,
+                           'content-type': 'application/x-www-form-urlencoded'
+                       }) as response:
+
+        response_json = response.json()
+        print(f'RESPONSE: {response_json}')
+
+        if response.status_code != 200:
+            payload['succes'] = False
+            payload['code'] = response_json['code']
+            payload['msg'] = response_json['msg']
+        else:
+            payload['succes'] = True
+            payload['status'] = response_json['status']
+
+    return payload
+
 
 def prepare_stop_loss_order_request_body(order, timestamp):
     request_body = ''
