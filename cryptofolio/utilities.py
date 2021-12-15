@@ -18,9 +18,9 @@ def fetch_exchange_credentials(token_claims, exchange):
     try:
         cipher_suite = Fernet(app.config.get('EXCHANGE_SECRET_KEY'))
         API_key = cipher_suite.decrypt(
-            str.encode(exchange_credentials.api_key)).decode('utf-8')
+            exchange_credentials.api_key).decode('UTF-8')
         secret = cipher_suite.decrypt(
-            str.encode(exchange_credentials.secret)).decode('utf-8')
+            exchange_credentials.secret).decode('UTF-8')
     except Exception as error:
         print(str(error))
         return False, 'Decryption error'
