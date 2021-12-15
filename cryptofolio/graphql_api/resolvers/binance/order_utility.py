@@ -20,9 +20,41 @@ def prepare_stop_loss_order_params(order, timestamp):
     params['price'] = order['price']
     params['stopPrice'] = order['stopPrice']
     params['newOrderRespType'] = 'RESULT'
-    params['timestamp'] = timestamp
 
     if 'icebergQty' in order.keys():
         params['icebergQty'] = order['icebergQty']
+
+    params['timestamp'] = timestamp
+
+    return params
+
+
+def prepare_spot_market_order_request_body(order, timestamp):
+
+    request_body = ''
+
+    if order['base'] is True:
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=MARKET&quantity={order["quantity"]}&timestamp={timestamp}'
+    else:
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=MARKET&quoteOrderQty={order["quantity"]}&timestamp={timestamp}'
+
+    print(request_body)
+    return request_body
+
+
+def prepare_spot_market_order_params(order, timestamp):
+
+    params = {
+        'symbol': order["symbol"],
+        'side': order['side'],
+        'type': 'MARKET',
+    }
+
+    if order['base'] is True:
+        params['quantity'] = order['quantity']
+    else:
+        params['quoteOrderQty'] = order['quantity']
+
+    params['timestamp'] = timestamp
 
     return params
