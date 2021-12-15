@@ -25,8 +25,8 @@ class Exchange(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                         nullable=False)
     exchange = db.Column(db.String(10), nullable=False)
-    api_key = db.Column(db.Text, unique=True, nullable=False)
-    secret = db.Column(db.Text, unique=True, nullable=False)
+    api_key = db.Column(db.LargeBinary, unique=True, nullable=False)
+    secret = db.Column(db.LargeBinary, unique=True, nullable=False)
 
 
 class Code(db.Model):
