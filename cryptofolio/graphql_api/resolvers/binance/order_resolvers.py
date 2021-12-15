@@ -3,6 +3,7 @@ import time
 import hmac
 import hashlib
 
+from .order_utility import make_order
 from .order_utility import prepare_stop_loss_order_request_body, prepare_stop_loss_order_params
 from .order_utility import prepare_spot_market_order_request_body, prepare_spot_market_order_params
 from .order_utility import prepare_spot_market_limit_order_params, prepare_spot_market_limit_order_request_body
@@ -38,23 +39,7 @@ def binance_spot_stop_loss_limit_order_resolver(obj, info, authToken,
     params['signature'] = signature
 
     # Make a request
-    with requests.post('https://testnet.binance.vision/api/v3/order',
-                       params=params,
-                       headers={
-                           'X-MBX-APIKEY': exchange_credentials[1],
-                           'content-type': 'application/x-www-form-urlencoded'
-                       }) as response:
-
-        response_json = response.json()
-        print(f'RESPONSE: {response_json}')
-
-        if response.status_code != 200:
-            payload['succes'] = False
-            payload['code'] = response_json['code']
-            payload['msg'] = response_json['msg']
-        else:
-            payload['succes'] = True
-            payload['status'] = response_json['status']
+    payload = make_order(params, exchange_credentials[1])
 
     return payload
 
@@ -72,7 +57,7 @@ def binance_spot_market_order_resolver(obj, info, authToken, order):
     token_validation_payload = validate_token(authToken)
     print(token_validation_payload)
     if not token_validation_payload[0]:
-        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+        return {'succes': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
@@ -86,23 +71,8 @@ def binance_spot_market_order_resolver(obj, info, authToken, order):
                          digestmod=hashlib.sha256).hexdigest()
     params['signature'] = signature
 
-    with requests.post('https://testnet.binance.vision/api/v3/order',
-                       params=params,
-                       headers={
-                           'X-MBX-APIKEY': exchange_credentials[1],
-                           'content-type': 'application/x-www-form-urlencoded'
-                       }) as response:
-
-        response_json = response.json()
-
-        print(response_json)
-        if response.status_code != 200:
-            payload['succes'] = False
-            payload['code'] = response_json['code']
-            payload['msg'] = response_json['msg']
-        else:
-            payload['succes'] = True
-            payload['status'] = response_json['status']
+    # Make a request
+    payload = make_order(params, exchange_credentials[1])
 
     return payload
 
@@ -119,7 +89,7 @@ def binance_spot_limit_order_resolver(info, obj, authToken, order):
     token_validation_payload = validate_token(authToken)
     print(token_validation_payload)
     if not token_validation_payload[0]:
-        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+        return {'succes': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
@@ -133,21 +103,7 @@ def binance_spot_limit_order_resolver(info, obj, authToken, order):
                          digestmod=hashlib.sha256).hexdigest()
     params['signature'] = signature
 
-    with requests.post('https://testnet.binance.vision/api/v3/order',
-                       params=params,
-                       headers={
-                           'X-MBX-APIKEY': exchange_credentials[1],
-                           'content-type': 'application/x-www-form-urlencoded'
-                       }) as response:
-
-        response_json = response.json()
-
-        if response.status_code != 200:
-            payload['succes'] = False
-            payload['code'] = response_json['code']
-            payload['msg'] = response_json['msg']
-        else:
-            payload['succes'] = True
-            payload['status'] = response_json['status']
+    # Make a request
+    payload = make_order(params, exchange_credentials[1])
 
     return payload

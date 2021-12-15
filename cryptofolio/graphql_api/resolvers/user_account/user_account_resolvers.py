@@ -18,7 +18,6 @@ def sign_up_resolver(obj, info, email, password):
     if User.query.filter_by(email=email).first():
         return {'Success': False, 'Token': 'Account already exists'}
 
-    # TODO
     user = User(**{
         'email': email,
         'password': bcrypt.generate_password_hash(password).decode('utf-8'),
@@ -43,7 +42,6 @@ def sign_up_resolver(obj, info, email, password):
         print(str(error))
         return {'Success': True, 'Token': 'Database error'}
 
-    # TODO
     try:
         msg = Message(
             'Cryptofolio - activation code',
@@ -337,7 +335,7 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
 
     # delete exchange
     try:
-        if exchange == 'binance':
+        if exchange.exchange == 'binance':
             user.binance = False
         else:
             user.bybit = False
