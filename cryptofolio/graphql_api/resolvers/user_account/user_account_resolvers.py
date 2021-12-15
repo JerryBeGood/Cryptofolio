@@ -337,7 +337,7 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
 
     # delete exchange
     try:
-        if exchange == 'binance':
+        if exchange.exchange == 'binance':
             user.binance = False
         else:
             user.bybit = False
