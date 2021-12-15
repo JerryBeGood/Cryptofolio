@@ -8,11 +8,10 @@ type Mutation {
   ): OrderResponse!
 
   """
-  binanceSPOTLimitOrder makes an limit order on SPOT market of binance exchange. API_key and secret are the means by which API identifies a user. Order of type LimitOrder is an argument that describes details of order to be made.
+  binanceSPOTLimitOrder makes an limit order on SPOT market of binance exchange. AuthToken is the mean by which API identifies a user. Order of type LimitOrder is an argument that describes details of order to be made.
   """
   binanceSPOTLimitOrder(
-    API_key: String!
-    secret: String!
+    authToken: String!
     order: LimitOrder
   ): OrderResponse!
 
