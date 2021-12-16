@@ -70,7 +70,7 @@ def binance_account_info_request(API_key, secret, recvWindow):
                          request_body.encode('UTF-8'),
                          digestmod=hashlib.sha256).hexdigest()
 
-    with requests.get(f'https://testnet.binance.vision/api/v3/account',
+    with requests.get(f'https://api1.binance.com/api/v3/account',
                       params={
                           'recvWindow': recvWindow,
                           'timestamp': timestamp,

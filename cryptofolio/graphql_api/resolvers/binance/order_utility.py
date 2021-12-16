@@ -5,7 +5,7 @@ def make_order(params, api_key):
 
     payload = {}
 
-    with requests.post('https://testnet.binance.vision/api/v3/order',
+    with requests.post('https://api1.binance.com/api/v3/order',
                        params=params,
                        headers={
                            'X-MBX-APIKEY': api_key,
