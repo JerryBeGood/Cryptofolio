@@ -287,6 +287,8 @@ def delete_account_resolver(obj, info, authToken):
         return {'Success': validation_payload[0], 'Token': validation_payload[1]}
 
     user = User.query.filter_by(id=validation_payload[1]['iss']).first()
+    if not user:
+        return {'Success': False, 'Token': "Account doesn't exist"}
 
     try:
         Code.query.filter_by(user_id=user.id).delete()
