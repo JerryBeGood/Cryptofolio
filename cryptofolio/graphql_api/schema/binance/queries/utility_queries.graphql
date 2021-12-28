@@ -8,8 +8,7 @@ type Query {
   binanceAccountInfo retrieves data regarding user's account on SPOT market. API_key and secret are the means by which API identifies a user.
   """
   binanceAccountInfo(
-    API_key: String!
-    secret: String!
+    authToken: String!
     recvWindow: Int
-  ): AccountInformation
+  ): AccountInformationResult
 }
