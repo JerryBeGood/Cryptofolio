@@ -7,10 +7,6 @@ from cryptofolio.utilities import EXCHANGE_INFO, ASSET_TICKER_INFO, validate_tok
 
 
 def binance_account_info_resolver(obj, info, authToken, recvWindow=5000):
-    account_information = {}
-    account_information['totalValue'] = 0.0
-    account_information['valueChangePercentage'] = 0.0
-    account_information['balances'] = []
 
     # Validate token
     token_validation_payload = validate_token(authToken)
@@ -28,36 +24,7 @@ def binance_account_info_resolver(obj, info, authToken, recvWindow=5000):
     response_json = binance_account_info_request(
         exchange_credentials[1], exchange_credentials[2], recvWindow)
 
-    for asset in response_json['balances']:
-        balance = {}
-        balance['asset'] = asset['asset']
-
-        if asset['asset'] in ['USDT', 'BUSD']:
-            balance['percentage'] = float(asset['free'])
-            account_information['totalValue'] += balance['percentage']
-        else:
-            if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
-                balance['percentage'] = float(
-                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                    ['price']) * float(asset['free'])
-            else:
-                balance['percentage'] = None
-
-            account_information['totalValue'] += balance['percentage']
-
-        account_information['balances'].append(balance)
-
-    for asset in account_information['balances']:
-        if asset['asset'] not in ['USDT', 'BUSD']:
-            account_information['valueChangePercentage'] += float(
-                ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                ['priceChangePercent']) * (asset['percentage'] / 100)
-        asset['percentage'] = round(
-            asset['percentage'] / (account_information['totalValue'] / 100), 2)
-
-    account_information['totalValue'] = round(account_information['totalValue'], 2)
-    account_information['valueChangePercentage'] = round(
-        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
+    account_information = binance_prepare_account_info_data(response_json)
 
     return {'success': True, 'msg': 'Ok', 'AccountInformation': account_information}
 
@@ -93,3 +60,44 @@ def binance_account_info_request(API_key, secret, recvWindow):
                       headers={'X-MBX-APIKEY': API_key}) as response:
 
         return response.json()
+
+
+def binance_prepare_account_info_data(response_json):
+    account_information = {}
+    account_information['totalValue'] = 0.0
+    account_information['valueChangePercentage'] = 0.0
+    account_information['balances'] = []
+
+    for asset in response_json['balances']:
+        balance = {}
+        balance['asset'] = asset['asset']
+
+        if asset['asset'] in ['USDT', 'BUSD']:
+            balance['percentage'] = float(asset['free'])
+            account_information['totalValue'] += balance['percentage']
+        else:
+            if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
+                balance['percentage'] = float(
+                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                    ['price']) * float(asset['free'])
+            else:
+                balance['percentage'] = None
+
+            account_information['totalValue'] += balance['percentage']
+
+        account_information['balances'].append(balance)
+
+    for asset in account_information['balances']:
+        if asset['asset'] not in ['USDT', 'BUSD']:
+            account_information['valueChangePercentage'] += float(
+                ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                ['priceChangePercent']) * (asset['percentage'] / 100)
+        asset['percentage'] = round(
+            asset['percentage'] / (account_information['totalValue'] / 100), 2)
+
+    account_information['totalValue'] = round(
+        account_information['totalValue'], 2)
+    account_information['valueChangePercentage'] = round(
+        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
+
+    return account_information
