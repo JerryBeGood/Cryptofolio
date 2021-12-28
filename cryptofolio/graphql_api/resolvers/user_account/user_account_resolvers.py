@@ -20,21 +20,17 @@ def sign_up_resolver(obj, info, email, password):
 
     user = User(**{
         'email': email,
-        'password': bcrypt.generate_password_hash(password).decode('utf-8'),
-        'is_activated': False,
-        'binance': False,
-        'bybit': False
+        'password': bcrypt.generate_password_hash(password).decode('utf-8')
     })
     db.session.add(user)
     db.session.flush()
 
-    activation_code = {
+    activation_code = Code(**{
         'user_id': user.id,
         'type': 'activation',
         'code': secrets.choice(range(10001, 99999)),
-        'timestamp': int(datetime.datetime.utcnow().timestamp()),
-    }
-    db.session.add(Code(**activation_code))
+    })
+    db.session.add(activation_code)
 
     try:
         db.session.commit()
@@ -46,11 +42,14 @@ def sign_up_resolver(obj, info, email, password):
         msg = Message(
             'Cryptofolio - activation code',
             recipients=[user.email],
-            body=f'{activation_code["code"]}',
+            body=f'{activation_code.code}',
             sender=("Cryptofolio", 'cryptofolio.service@gmail.com')
         )
         mail.send(msg)
     except Exception as error:
+        db.session.delete(user)
+        db.session.delete(activation_code)
+        db.session.commit()
         print(str(error))
         return {'Success': False, 'Token': 'Activation mail error'}
 
