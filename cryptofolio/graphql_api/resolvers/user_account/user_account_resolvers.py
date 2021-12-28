@@ -258,7 +258,7 @@ def recover_password_resolver(obj, info, email, password, code):
         return {'Success': False, 'Token': "Account doesn't exist"}
 
     # Validate code & delete it
-    recovery_code = Code.query.filter_by(
+    recovery_code = Code.query.filter_by(code=code).filter_by(
         user_id=user.id).filter_by(type='recovery').first()
     if not recovery_code:
         return {'Success': False, 'Token': 'Wrong recovery code'}
@@ -426,7 +426,7 @@ def generate_auth_token(user):
 
 
 def code_auth(user, type, code):
-    the_code = Code.query.filter_by(
+    the_code = Code.query.filter_by(code=code).filter_by(
         user_id=user.id).filter_by(type=type).first()
     if not the_code:
         False, f'Wrong {type} code'
