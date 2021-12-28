@@ -1,3 +1,9 @@
+type AccountInformationResult {
+  success: Boolean!
+  msg: String!
+  AccountInformation: AccountInformation
+}
+
 """
 AccountInformation type holds general data about contents of user's wallet like: total value and it's percentage change over a period o time.
 """
