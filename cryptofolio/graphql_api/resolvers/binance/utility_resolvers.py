@@ -3,16 +3,30 @@ import time
 import hmac
 import hashlib
 
-from cryptofolio.utilities import EXCHANGE_INFO, ASSET_TICKER_INFO
+from cryptofolio.utilities import EXCHANGE_INFO, ASSET_TICKER_INFO, validate_token, fetch_exchange_credentials
 
 
-def binance_account_info_resolver(obj, info, API_key, secret, recvWindow=5000):
-    payload = {}
-    payload['totalValue'] = 0.0
-    payload['valueChangePercentage'] = 0.0
-    payload['balances'] = []
+def binance_account_info_resolver(obj, info, authToken, recvWindow=5000):
+    account_information = {}
+    account_information['totalValue'] = 0.0
+    account_information['valueChangePercentage'] = 0.0
+    account_information['balances'] = []
 
-    response_json = binance_account_info_request(API_key, secret, recvWindow)
+    # Validate token
+    token_validation_payload = validate_token(authToken)
+    print(token_validation_payload)
+    if not token_validation_payload[0]:
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+
+    # Fetch exchange credentials
+    exchange_credentials = fetch_exchange_credentials(
+        token_validation_payload[1], 'binance')
+    print(exchange_credentials)
+    if not exchange_credentials[0]:
+        return {'success': False, 'msg': exchange_credentials[1]}
+
+    response_json = binance_account_info_request(
+        exchange_credentials[1], exchange_credentials[2], recvWindow)
 
     for asset in response_json['balances']:
         balance = {}
@@ -20,7 +34,7 @@ def binance_account_info_resolver(obj, info, API_key, secret, recvWindow=5000):
 
         if asset['asset'] in ['USDT', 'BUSD']:
             balance['percentage'] = float(asset['free'])
-            payload['totalValue'] += balance['percentage']
+            account_information['totalValue'] += balance['percentage']
         else:
             if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
                 balance['percentage'] = float(
@@ -29,23 +43,23 @@ def binance_account_info_resolver(obj, info, API_key, secret, recvWindow=5000):
             else:
                 balance['percentage'] = None
 
-            payload['totalValue'] += balance['percentage']
+            account_information['totalValue'] += balance['percentage']
 
-        payload['balances'].append(balance)
+        account_information['balances'].append(balance)
 
-    for asset in payload['balances']:
+    for asset in account_information['balances']:
         if asset['asset'] not in ['USDT', 'BUSD']:
-            payload['valueChangePercentage'] += float(
+            account_information['valueChangePercentage'] += float(
                 ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
                 ['priceChangePercent']) * (asset['percentage'] / 100)
         asset['percentage'] = round(
-            asset['percentage'] / (payload['totalValue'] / 100), 2)
+            asset['percentage'] / (account_information['totalValue'] / 100), 2)
 
-    payload['totalValue'] = round(payload['totalValue'], 2)
-    payload['valueChangePercentage'] = round(
-        payload['valueChangePercentage'] / (payload['totalValue'] / 100), 2)
+    account_information['totalValue'] = round(account_information['totalValue'], 2)
+    account_information['valueChangePercentage'] = round(
+        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
 
-    return payload
+    return {'success': True, 'msg': 'Ok', 'AccountInformation': account_information}
 
 
 def binance_exchange_info_resolver(obj, info, symbols=None):
