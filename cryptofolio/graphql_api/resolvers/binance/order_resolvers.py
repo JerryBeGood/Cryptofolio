@@ -1,14 +1,13 @@
-import requests
 import time
 import hmac
 import hashlib
 
-from .order_utility import make_order
-from .order_utility import prepare_stop_loss_order_request_body, prepare_stop_loss_order_params
-from .order_utility import prepare_spot_market_order_request_body, prepare_spot_market_order_params
-from .order_utility import prepare_spot_market_limit_order_params, prepare_spot_market_limit_order_request_body
+from .binance_utility import make_order
+from .binance_utility import prepare_stop_loss_order_request_body, prepare_stop_loss_order_params
+from .binance_utility import prepare_spot_market_order_request_body, prepare_spot_market_order_params
+from .binance_utility import prepare_spot_market_limit_order_params, prepare_spot_market_limit_order_request_body
 
-from cryptofolio.utilities import validate_token, fetch_exchange_credentials
+from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
 
 
 def binance_spot_stop_loss_limit_order_resolver(obj, info, authToken,

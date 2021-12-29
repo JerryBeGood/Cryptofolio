@@ -1,10 +1,9 @@
 import secrets
-import jwt
+
 import datetime
-import time
-import hmac
-import hashlib
-import requests
+
+from .user_account_utility import validate_exchange_credentials, generate_auth_token, code_auth
+from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token
 
 from flask_mail import Message
 from cryptography.fernet import Fernet
@@ -69,7 +68,6 @@ def activate_account_resolver(obj, info, email, password, code):
     if user.is_activated:
         return {'Success': False, 'Token': 'Account already activated'}
 
-    # TODO
     code_validation = code_auth(user, 'activation', code)
     if not code_validation[0]:
         return {'Success': code_validation[0], 'Token': code_validation[1]}
@@ -348,93 +346,3 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
     
     # return status
     return {'Success': True, 'Token': 'Exchange deleted successfully'}
-
-
-def validate_exchange_credentials(API_key, secret, exchange):
-
-    if exchange == 'binance':
-        recvWindow = 5000
-        timestamp = int(round(time.time() * 1000))
-        request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
-        signature = hmac.new(secret.encode(),
-                             request_body.encode('UTF-8'),
-                             digestmod=hashlib.sha256).hexdigest()
-
-        with requests.get(f'https://testnet.binance.vision/api/v3/account',
-                          params={
-                              'recvWindow': recvWindow,
-                              'timestamp': timestamp,
-                              'signature': signature
-                          },
-                          headers={'X-MBX-APIKEY': API_key}) as response:
-
-            if response.status_code == 200:
-                return True, response
-            else:
-                return False, response
-    else:
-        return False, 'ByBit not yet implemented'
-
-
-def validate_token(authToken):
-    try:
-        jwt_claims = jwt.decode(
-            jwt=authToken,
-            key=app.config.get('SECRET_KEY'),
-            algorithms=['HS256'],
-            options={
-                'verify_signature': True,
-                'require': ['exp', 'iat', 'iss'],
-                'verify_exp': True,
-                'verify_iat': True
-            }
-        )
-    except jwt.exceptions.InvalidTokenError as error:
-        return False, str(error)
-    except jwt.exceptions.DecodeError as error:
-        return False, str(error)
-    except jwt.exceptions.ExpiredSignatureError as error:
-        return False, str(error)
-    except jwt.exceptions.InvalidIssuedAtError as error:
-        return False, str(error)
-    except jwt.exceptions.InvalidKeyError as error:
-        return False, str(error)
-    except jwt.exceptions.InvalidAlgorithmError as error:
-        return False, str(error)
-    except jwt.exceptions.MissingRequiredClaimError as error:
-        return False, str(error)
-    except Exception as error:
-        return False, str(error)
-    else:
-        return True, jwt_claims
-
-
-def generate_auth_token(user):
-    try:
-        payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=60),
-            'iat': datetime.datetime.utcnow(),
-            'iss': user.id,
-        }
-        return True, jwt.encode(
-            payload,
-            app.config.get('SECRET_KEY'),
-            algorithm='HS256'
-        )
-    except Exception as e:
-        return False, e
-
-
-def code_auth(user, type, code):
-    the_code = Code.query.filter_by(code=code).filter_by(
-        user_id=user.id).filter_by(type=type).first()
-    if not the_code:
-        False, f'Wrong {type} code'
-    elif the_code.timestamp - int(datetime.datetime.utcnow().timestamp()) < -300000:
-        db.session.delete(the_code)
-        db.session.commit()
-        return False, f'{type} code overdue'
-    else:
-        db.session.delete(the_code)
-        db.session.commit()
-        return True, 'Ok'
