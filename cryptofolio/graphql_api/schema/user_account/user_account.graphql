@@ -1,4 +1,4 @@
-extend type Mutation {
+type Mutation {
   signUp(email: String!, password: String!): AuthPayload!
   signIn(email: String!, password: String!): AuthPayload!
   activateAccount(
