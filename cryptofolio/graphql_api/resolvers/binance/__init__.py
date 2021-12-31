@@ -1,2 +1,1 @@
 from .utility_resolvers import binance_account_info_resolver, binance_exchange_info_resolver
-from .order_resolvers import binance_spot_limit_order_resolver, binance_spot_market_order_resolver, binance_spot_stop_loss_limit_order_resolver

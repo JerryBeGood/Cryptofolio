@@ -1,5 +1,7 @@
 from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials, binance_exchange_info, binance_asset_ticker_info
 
+from .binance_utility import binance_account_info_request, binance_prepare_account_info_data
+
 EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
 

@@ -21,11 +21,11 @@ def make_order(params, api_key):
         print(f'RESPONSE: {response_json}')
 
         if response.status_code != 200:
-            payload['succes'] = False
+            payload['success'] = False
             payload['code'] = response_json['code']
             payload['msg'] = response_json['msg']
         else:
-            payload['succes'] = True
+            payload['success'] = True
             payload['status'] = response_json['status']
 
     return payload

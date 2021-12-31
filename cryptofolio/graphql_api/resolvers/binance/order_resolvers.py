@@ -22,14 +22,14 @@ def binance_spot_stop_loss_limit_order_resolver(obj, info, authToken,
     token_validation_payload = validate_token(authToken)
     print(token_validation_payload)
     if not token_validation_payload[0]:
-        return {'succes': token_validation_payload[0], 'msg': token_validation_payload[1]}
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
     print(exchange_credentials)
     if not exchange_credentials[0]:
-        return {'succes': False, 'msg': exchange_credentials[1]}
+        return {'success': False, 'msg': exchange_credentials[1]}
 
     # Preapre signature
     signature = hmac.new(exchange_credentials[2].encode(),
@@ -56,14 +56,14 @@ def binance_spot_market_order_resolver(obj, info, authToken, order):
     token_validation_payload = validate_token(authToken)
     print(token_validation_payload)
     if not token_validation_payload[0]:
-        return {'succes': token_validation_payload[0], 'msg': token_validation_payload[1]}
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
     print(exchange_credentials)
     if not exchange_credentials[0]:
-        return {'succes': False, 'msg': exchange_credentials[1]}
+        return {'success': False, 'msg': exchange_credentials[1]}
 
     signature = hmac.new(exchange_credentials[2].encode(),
                          request_body.encode('UTF-8'),
@@ -88,14 +88,14 @@ def binance_spot_limit_order_resolver(info, obj, authToken, order):
     token_validation_payload = validate_token(authToken)
     print(token_validation_payload)
     if not token_validation_payload[0]:
-        return {'succes': token_validation_payload[0], 'msg': token_validation_payload[1]}
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
     print(exchange_credentials)
     if not exchange_credentials[0]:
-        return {'succes': False, 'msg': exchange_credentials[1]}
+        return {'success': False, 'msg': exchange_credentials[1]}
 
     signature = hmac.new(exchange_credentials[2].encode(),
                          request_body.encode('UTF-8'),
