@@ -3,7 +3,10 @@ import time
 import hmac
 import hashlib
 
-from .utility_resolvers import ASSET_TICKER_INFO
+from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
+
+EXCHANGE_INFO = binance_exchange_info()
+ASSET_TICKER_INFO = binance_asset_ticker_info()
 
 
 def make_order(params, api_key):
