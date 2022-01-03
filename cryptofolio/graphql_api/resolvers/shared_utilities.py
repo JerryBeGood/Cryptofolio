@@ -42,7 +42,6 @@ def fetch_exchange_credentials(token_claims, exchange):
 
     exchange_credentials = Exchange.query.filter_by(
         user_id=token_claims['iss']).filter_by(exchange=exchange).first()
-    print(exchange_credentials)
     if not exchange_credentials:
         return False, f"{exchange} credentials doesn't exist for this account"
 

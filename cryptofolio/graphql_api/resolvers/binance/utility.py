@@ -3,10 +3,33 @@ import time
 import hmac
 import hashlib
 
+
 from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
 
 EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
+
+
+def validate_binance_credentials(API_key, secret):
+    recvWindow = 5000
+    timestamp = int(round(time.time() * 1000))
+    request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
+    signature = hmac.new(secret.encode(),
+                         request_body.encode('UTF-8'),
+                         digestmod=hashlib.sha256).hexdigest()
+
+    with requests.get(f'https://testnet.binance.vision/api/v3/account',
+                      params={
+                          'recvWindow': recvWindow,
+                          'timestamp': timestamp,
+                          'signature': signature
+                      },
+                      headers={'X-MBX-APIKEY': API_key}) as response:
+
+        if response.status_code == 200:
+            return True, response
+        else:
+            return False, response
 
 
 def make_order(params, api_key):

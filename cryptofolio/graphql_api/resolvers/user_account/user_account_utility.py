@@ -1,36 +1,18 @@
-import requests
-import time, datetime
-import hmac, hashlib
+import datetime
 import jwt
 
 from cryptofolio import app, db
+from cryptofolio.graphql_api.resolvers.binance import validate_binance_credentials
+from cryptofolio.graphql_api.resolvers.bybit.utility import validate_bybit_credentials
 from cryptofolio.models import Code
 
 
 def validate_exchange_credentials(API_key, secret, exchange):
 
     if exchange == 'binance':
-        recvWindow = 5000
-        timestamp = int(round(time.time() * 1000))
-        request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
-        signature = hmac.new(secret.encode(),
-                             request_body.encode('UTF-8'),
-                             digestmod=hashlib.sha256).hexdigest()
-
-        with requests.get(f'https://testnet.binance.vision/api/v3/account',
-                          params={
-                              'recvWindow': recvWindow,
-                              'timestamp': timestamp,
-                              'signature': signature
-                          },
-                          headers={'X-MBX-APIKEY': API_key}) as response:
-
-            if response.status_code == 200:
-                return True, response
-            else:
-                return False, response
-    else:
-        return False, 'ByBit not yet implemented'
+        return validate_binance_credentials(API_key, secret)
+    elif exchange == 'bybit':
+        return validate_bybit_credentials(API_key, secret)
 
 
 def generate_auth_token(user):

@@ -191,9 +191,12 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
         'secret': cipher_suite.encrypt(str.encode(secret))
     }
 
-    print(user.binance)
-    db.session.add(Exchange(**new_exchange))
-    db.session.commit()
+    try:
+        db.session.add(Exchange(**new_exchange))
+        db.session.commit()
+    except Exception as error:
+        print(str(error))
+        return {'Success': False, 'Token': 'Database error'}
 
     return {'Success': True, 'Token': 'Exchange added to the account'}
 
@@ -336,13 +339,13 @@ def delete_exchange_resolver(obj, info, authToken, exchange):
     try:
         if exchange.exchange == 'binance':
             user.binance = False
-        else:
+        elif exchange.exchange == 'bybit':
             user.bybit = False
         db.session.delete(exchange)
         db.session.commit()
     except Exception as error:
         print(str(error))
         return {'Success': False, 'Token': 'Database error'}
-    
+
     # return status
     return {'Success': True, 'Token': 'Exchange deleted successfully'}
