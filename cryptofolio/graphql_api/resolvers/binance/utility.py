@@ -3,7 +3,7 @@ import time
 import hmac
 import hashlib
 
-from .utility_resolvers import ASSET_TICKER_INFO
+from .information_resolvers import ASSET_TICKER_INFO
 
 
 def make_order(params, api_key):
