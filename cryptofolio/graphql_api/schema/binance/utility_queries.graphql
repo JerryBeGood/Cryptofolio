@@ -1,10 +1,5 @@
 type Query {
   """
-  binanceExchangeInfo fetches data regarding order placement for given pairs of symbols
-  """
-  binanceExchangeInfo(symbols: [String!]): [AssetPair!]
-
-  """
   binanceAccountInfo retrieves data regarding user's account on SPOT market. API_key and secret are the means by which API identifies a user.
   """
   binanceAccountInfo(

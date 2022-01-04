@@ -9,5 +9,3 @@ binance_query = ObjectType("Query")
 
 binance_query.set_field('binanceAccountInfo',
                         binance.binance_account_info_resolver)
-binance_query.set_field('binanceExchangeInfo',
-                        binance.binance_exchange_info_resolver)

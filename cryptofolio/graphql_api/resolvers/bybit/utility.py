@@ -24,22 +24,10 @@ def validate_bybit_credentials(API_key, secret):
         else:
             return False, response
 
-# recvWindow = 5000
-#     timestamp = int(round(time.time() * 1000))
-#     request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
-#     signature = hmac.new(secret.encode(),
-#                          request_body.encode('UTF-8'),
-#                          digestmod=hashlib.sha256).hexdigest()
 
-#     with requests.get(f'https://testnet.binance.vision/api/v3/account',
-#                       params={
-#                           'recvWindow': recvWindow,
-#                           'timestamp': timestamp,
-#                           'signature': signature
-#                       },
-#                       headers={'X-MBX-APIKEY': API_key}) as response:
-
-#         if response.status_code == 200:
-#             return True, response
-#         else:
-#             return False, response
+def bybit_exchange_info(symbols=None):
+    return [{
+        'symbol': 'BTCUSDT',
+        'baseAsset': 'BTC',
+        'quote': 'USDT'
+    }]

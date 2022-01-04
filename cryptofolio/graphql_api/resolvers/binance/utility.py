@@ -6,8 +6,23 @@ import hashlib
 
 from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
 
-EXCHANGE_INFO = binance_exchange_info()
+BINANCE_EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
+
+
+def binance_exchange_info(symbols=None):
+
+    keys = BINANCE_EXCHANGE_INFO.keys()
+    payload = []
+
+    if symbols is None:
+        payload = BINANCE_EXCHANGE_INFO.values()
+    else:
+        for symbol in symbols:
+            if symbol in keys:
+                payload.append(BINANCE_EXCHANGE_INFO[symbol])
+
+    return payload
 
 
 def validate_binance_credentials(API_key, secret):

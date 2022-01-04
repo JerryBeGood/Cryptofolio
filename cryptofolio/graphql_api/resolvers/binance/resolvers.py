@@ -24,18 +24,3 @@ def binance_account_info_resolver(obj, info, authToken, recvWindow=5000):
     account_information = binance_prepare_account_info_data(response_json)
 
     return {'success': True, 'msg': 'Ok', 'AccountInformation': account_information}
-
-
-def binance_exchange_info_resolver(obj, info, symbols=None):
-
-    keys = EXCHANGE_INFO.keys()
-    payload = []
-
-    if symbols is None:
-        payload = EXCHANGE_INFO.values()
-    else:
-        for symbol in symbols:
-            if symbol in keys:
-                payload.append(EXCHANGE_INFO[symbol])
-
-    return payload
