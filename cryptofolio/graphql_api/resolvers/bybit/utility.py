@@ -3,6 +3,10 @@ import requests
 import hmac
 import hashlib
 
+from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info
+
+BYBIT_EXCHANGE_INFO = bybit_exchange_info()
+
 
 def validate_bybit_credentials(API_key, secret):
 
@@ -26,8 +30,24 @@ def validate_bybit_credentials(API_key, secret):
 
 
 def bybit_exchange_info(symbols=None):
-    return [{
-        'symbol': 'BTCUSDT',
-        'baseAsset': 'BTC',
-        'quote': 'USDT'
-    }]
+
+    keys = BYBIT_EXCHANGE_INFO.keys()
+    payload = []
+
+    if symbols is None:
+        for pair in BYBIT_EXCHANGE_INFO.values():
+            asset_pair = {}
+            asset_pair['symbol'] = pair['name']
+            asset_pair['baseAsset'] = pair['baseCurrency']
+            asset_pair['quoteAsset'] = pair['quoteCurrency']
+            payload.append(asset_pair)
+    else:
+        for symbol in symbols:
+            if symbol in keys:
+                asset_pair = {}
+                asset_pair['symbol'] = BYBIT_EXCHANGE_INFO[symbol]['name']
+                asset_pair['baseAsset'] = BYBIT_EXCHANGE_INFO[symbol]['baseCurrency']
+                asset_pair['quoteAsset'] = BYBIT_EXCHANGE_INFO[symbol]['quoteCurrency']
+                payload.append(asset_pair)
+
+    return payload

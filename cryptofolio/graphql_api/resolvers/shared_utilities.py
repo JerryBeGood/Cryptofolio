@@ -58,6 +58,21 @@ def fetch_exchange_credentials(token_claims, exchange):
         return True, API_key, secret
 
 
+def bybit_exchange_info():
+
+    payload = {}
+
+    with requests.get(
+            'https://api-testnet.bybit.com/spot/v1/symbols') as response:
+
+        response_json = response.json()
+
+        for pair in response_json['result']:
+            payload[pair['name']] = pair
+
+    return payload
+
+
 def binance_exchange_info():
 
     payload = {}
