@@ -1,0 +1,6 @@
+extend type Query {
+  """
+  exchangeInfo fetches data regarding order placement for given pairs of symbols
+  """
+  exchangeInfo(symbols: [String!]): [AssetPair!]
+}

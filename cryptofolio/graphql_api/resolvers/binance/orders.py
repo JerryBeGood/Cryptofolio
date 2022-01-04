@@ -20,14 +20,12 @@ def binance_spot_stop_loss_limit_order(authToken,
 
     # Validate token
     token_validation_payload = validate_token(authToken)
-    print(token_validation_payload)
     if not token_validation_payload[0]:
         return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
-    print(exchange_credentials)
     if not exchange_credentials[0]:
         return {'success': False, 'msg': exchange_credentials[1]}
 
@@ -54,14 +52,12 @@ def binance_spot_market_order(authToken, order):
 
     # Validate token
     token_validation_payload = validate_token(authToken)
-    print(token_validation_payload)
     if not token_validation_payload[0]:
         return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
-    print(exchange_credentials)
     if not exchange_credentials[0]:
         return {'success': False, 'msg': exchange_credentials[1]}
 
@@ -86,14 +82,12 @@ def binance_spot_limit_order(authToken, order):
 
     # Validate token
     token_validation_payload = validate_token(authToken)
-    print(token_validation_payload)
     if not token_validation_payload[0]:
         return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
-    print(exchange_credentials)
     if not exchange_credentials[0]:
         return {'success': False, 'msg': exchange_credentials[1]}
 

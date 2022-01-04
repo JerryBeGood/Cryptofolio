@@ -167,7 +167,7 @@ def add_exchange_resolver(obj, info, API_key, secret, authToken, exchange):
     exchange_validation_payload = validate_exchange_credentials(
         API_key, secret, exchange)
     if not exchange_validation_payload[0]:
-        return {'Success': exchange_validation_payload[0], 'Token': exchange_validation_payload[1]}
+        return {'Success': exchange_validation_payload[0], 'Token': 'Exchange credentials not valid'}
 
     user = User.query.filter_by(id=token_validation_payload[1]['iss']).first()
 

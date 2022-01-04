@@ -1,6 +1,6 @@
 from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
 
-from . import binance_account_info_request, binance_prepare_account_info_data
+from .utility import binance_account_info_request, binance_prepare_account_info_data
 
 
 def binance_account_info_resolver(obj, info, authToken, recvWindow=5000):
