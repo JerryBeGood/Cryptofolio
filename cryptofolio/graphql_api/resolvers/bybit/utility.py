@@ -8,6 +8,32 @@ from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_in
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 
 
+def make_order(params):
+
+    payload = {}
+
+    with requests.post('https://api-testnet.bybit.com/spot/v1/order',
+                       params=params,
+                       headers={
+                           "Content-Type": "application/x-www-form-urlencoded"
+                       }) as response:
+
+        print(response.url)
+        response_json = response.json()
+
+        print(response_json)
+
+        if response.status_code != 200:
+            payload['success'] = False
+            payload['code'] = response_json['ret_code']
+            payload['msg'] = response_json['ret_msg']
+        else:
+            payload['success'] = True
+            payload['status'] = response_json['result']['status']
+
+    return payload
+
+
 def validate_bybit_credentials(API_key, secret):
 
     timestamp = int(round(time.time() * 1000))

@@ -12,7 +12,7 @@ type Mutation {
     API_key: String!
     secret: String!
     authToken: String!
-    exchange: Exchange!
+    exchange: EXCHANGE!
     ): AuthPayload!
   generatePswdRecoveryCode(email: String!): AuthPayload!
   recoverPassword(
@@ -22,7 +22,7 @@ type Mutation {
   ): AuthPayload!
   deleteAccount(authToken: String!): AuthPayload!
   changePassword(authToken: String!, password: String!): AuthPayload!
-  deleteExchange(authToken: String!, exchange: Exchange!): AuthPayload!
+  deleteExchange(authToken: String!, exchange: EXCHANGE!): AuthPayload!
 }
 
 type AuthPayload {
@@ -34,9 +34,4 @@ type AccountStatus {
   email: String!
   binance: Boolean
   bybit: Boolean
-}
-
-enum Exchange {
-  binance
-  bybit
 }

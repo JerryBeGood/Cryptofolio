@@ -72,11 +72,8 @@ input MarketOrder {
 
   """
   When base is True, quantity field specifies the amount of base asset(first in a pair) the user wants to buy or sell.
-  For example sending order on BTCUSDT will specify how much BTC user is buying or selling.
-  When base is False, quantity field specifies the amount the user wants to spend(when buying) or receive(when selling) the quote asset(second in a pair).
-  For example sending order on BTCUSDT on the BUY side will buy as many BTC as quantity USDT can.
   """
-  base: Boolean!
+  base: Boolean
   
   quantity: Float!
 }
@@ -160,7 +157,7 @@ enum STATUS {
   """
   The order has been canceled by the user.
   """
-  CANCELLED
+  CANCELED
   """
   Currently unused
   """
