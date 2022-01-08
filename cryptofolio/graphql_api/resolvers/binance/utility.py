@@ -33,7 +33,7 @@ def validate_binance_credentials(API_key, secret):
                          request_body.encode('UTF-8'),
                          digestmod=hashlib.sha256).hexdigest()
 
-    with requests.get(f'https://testnet.binance.vision/api/v3/account',
+    with requests.get(f'{app.config.get("BINANCE")}/api/v3/account',
                       params={
                           'recvWindow': recvWindow,
                           'timestamp': timestamp,
@@ -51,7 +51,7 @@ def make_order(params, api_key):
 
     payload = {}
 
-    with requests.post('https://testnet.binance.vision/api/v3/order',
+    with requests.post(f'{app.config.get("BINANCE")}/api/v3/order',
                        params=params,
                        headers={
                            'X-MBX-APIKEY': api_key,
@@ -174,7 +174,7 @@ def binance_account_info_request(API_key, secret, recvWindow):
                          request_body.encode('UTF-8'),
                          digestmod=hashlib.sha256).hexdigest()
 
-    with requests.get(f'https://testnet.binance.vision/api/v3/account',
+    with requests.get(f'{app.config.get("BINANCE")}/api/v3/account',
                       params={
                           'recvWindow': recvWindow,
                           'timestamp': timestamp,

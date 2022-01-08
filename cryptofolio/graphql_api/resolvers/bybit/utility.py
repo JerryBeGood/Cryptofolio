@@ -4,6 +4,7 @@ import hmac
 import hashlib
 
 from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info
+from cryptofolio import app
 
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 
@@ -31,7 +32,7 @@ def make_order(params):
 
     payload = {}
 
-    with requests.post('https://api-testnet.bybit.com/spot/v1/order',
+    with requests.post(f'{app.config.get("BYBIT")}/spot/v1/order',
                        params=params,
                        headers={
                            "Content-Type": "application/x-www-form-urlencoded"
@@ -61,7 +62,7 @@ def validate_bybit_credentials(API_key, secret):
                     request_body.encode('UTF-8'),
                     digestmod=hashlib.sha256).hexdigest()
 
-    with requests.get(f'https://api-testnet.bybit.com/spot/v1/account',
+    with requests.get(f'{app.config.get("BYBIT")}/spot/v1/account',
                       params={
                           'api_key': API_key,
                           'timestamp': timestamp,

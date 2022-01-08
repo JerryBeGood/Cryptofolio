@@ -63,7 +63,7 @@ def bybit_exchange_info():
     payload = {}
 
     with requests.get(
-            'https://api-testnet.bybit.com/spot/v1/symbols') as response:
+            f'{app.config.get("BYBIT")}/spot/v1/symbols') as response:
 
         response_json = response.json()
 
@@ -78,7 +78,7 @@ def binance_exchange_info():
     payload = {}
 
     with requests.get(
-            'https://testnet.binance.vision/api/v3/exchangeInfo') as response:
+            f'{app.config.get("BINANCE")}/app/v3/exchangeInfo') as response:
 
         response_json = response.json()
 
@@ -93,7 +93,7 @@ def binance_asset_ticker_info():
     payload = {}
 
     with requests.get(
-            'https://testnet.binance.vision/api/v3/ticker/24hr') as response:
+            f'{app.config.get("BINANCE")}/api/v3/ticker/24hr') as response:
 
         response_json = response.json()
 

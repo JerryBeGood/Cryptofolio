@@ -15,6 +15,10 @@ class BaseConfig:
     MAIL_USERNAME = 'cryptofolio.service@gmail.com'
     MAIL_PASSWORD = 'Cryptofolio1'
 
+    # """Exchanges urls"""
+    BINANCE = 'https://testnet.binance.vision'
+    BYBIT = 'https://api-testnet.bybit.com'
+
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
