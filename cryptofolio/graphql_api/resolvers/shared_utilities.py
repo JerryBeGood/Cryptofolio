@@ -78,7 +78,7 @@ def binance_exchange_info():
     payload = {}
 
     with requests.get(
-            'https://api.binance.com/api/v3/exchangeInfo') as response:
+            'https://testnet.binance.vision/api/v3/exchangeInfo') as response:
 
         response_json = response.json()
 
@@ -93,7 +93,7 @@ def binance_asset_ticker_info():
     payload = {}
 
     with requests.get(
-            'https://api.binance.com/api/v3/ticker/24hr') as response:
+            'https://testnet.binance.vision/api/v3/ticker/24hr') as response:
 
         response_json = response.json()
 

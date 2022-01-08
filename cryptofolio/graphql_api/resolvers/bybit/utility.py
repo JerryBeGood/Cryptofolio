@@ -8,6 +8,25 @@ from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_in
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 
 
+def make_order_signature(params, secret):
+    request_body = ""
+    for key in sorted(params.keys()):
+        v = params[key]
+        if isinstance(params[key], bool):
+            if params[key]:
+                v = "true"
+            else:
+                v = "false"
+        request_body += f"{key}={v}&"
+    request_body = request_body[:-1]
+
+    signature = hmac.new(secret.encode(),
+                         request_body.encode('UTF-8'),
+                         digestmod=hashlib.sha256).hexdigest()
+
+    return signature
+
+
 def make_order(params):
 
     payload = {}
@@ -23,13 +42,13 @@ def make_order(params):
 
         print(response_json)
 
-        if response.status_code != 200:
+        if response_json['ret_code'] == '0':
+            payload['success'] = True
+            payload['status'] = response_json['result']['status']
+        else:
             payload['success'] = False
             payload['code'] = response_json['ret_code']
             payload['msg'] = response_json['ret_msg']
-        else:
-            payload['success'] = True
-            payload['status'] = response_json['result']['status']
 
     return payload
 

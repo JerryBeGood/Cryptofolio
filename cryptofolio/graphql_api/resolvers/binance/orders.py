@@ -10,8 +10,7 @@ from .utility import prepare_spot_market_limit_order_params, prepare_spot_market
 from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
 
 
-def binance_spot_stop_loss_limit_order(authToken,
-                                                order):
+def binance_spot_stop_loss_limit_order(authToken, order):
     # Prepare request body
     payload = {}
     timestamp = int(round(time.time() * 1000))
@@ -78,7 +77,8 @@ def binance_spot_limit_order(authToken, order):
     # Prepare request data
     timestamp = int(round(time.time() * 1000))
     params = prepare_spot_market_limit_order_params(order, timestamp)
-    request_body = prepare_spot_market_limit_order_request_body(order, timestamp)
+    request_body = prepare_spot_market_limit_order_request_body(
+        order, timestamp)
 
     # Validate token
     token_validation_payload = validate_token(authToken)

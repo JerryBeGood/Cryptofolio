@@ -1,9 +1,7 @@
 import time
-import hmac
-import hashlib
 
 from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
-from .utility import make_order
+from .utility import make_order, make_order_signature
 
 
 def bybit_spot_limit_order(authToken, order):
@@ -37,22 +35,7 @@ def bybit_spot_market_order(authToken, order):
         'qty': order['quantity']
     }
 
-    request_body = ""
-    for key in sorted(params.keys()):
-        v = params[key]
-        if isinstance(params[key], bool):
-            if params[key]:
-                v = "true"
-            else:
-                v = "false"
-        request_body += f"{key}={v}&"
-    request_body = request_body[:-1]
-
-    sign = hmac.new(exchange_credentials[2].encode(),
-                    request_body.encode('UTF-8'),
-                    digestmod=hashlib.sha256).hexdigest()
-
-    params['sign'] = sign
+    params['sign'] = make_order_signature(params, exchange_credentials[2])
     payload = make_order(params)
 
     return payload
