@@ -145,7 +145,8 @@ def prepare_spot_market_limit_order_params(order, timestamp):
         params['icebergQty'] = order['icebergQty']
 
     params['quantity'] = order['quantity']
-    params['timeInForce'] = order['timeInForce']
+    params['timeInForce'] = order['timeInForce'] if 'timeInForce' in order.keys(
+    ) else 'GTC',
     params['price'] = order['price']
     params['timestamp'] = timestamp
 
@@ -155,11 +156,13 @@ def prepare_spot_market_limit_order_params(order, timestamp):
 def prepare_spot_market_limit_order_request_body(order, timestamp):
 
     request_body = ''
+    timeInForce = order['timeInForce'] if 'timeInForce' in order.keys(
+    ) else 'GTC',
 
     if 'icebergQty' in order.keys():
-        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&timestamp={timestamp}'
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={timeInForce}&price={order["price"]}&timestamp={timestamp}'
     else:
-        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&timestamp={timestamp}'
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&quantity={order["quantity"]}&timeInForce={timeInForce}&price={order["price"]}&timestamp={timestamp}'
 
     return request_body
 

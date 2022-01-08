@@ -42,7 +42,7 @@ def make_order(params):
 
         print(response_json)
 
-        if response_json['ret_code'] == '0':
+        if response_json['ret_code'] == 0:
             payload['success'] = True
             payload['status'] = response_json['result']['status']
         else:

@@ -47,7 +47,7 @@ input LimitOrder {
   """
   This sets how long an order will be active before expiration
   """
-  timeInForce: TIF!
+  timeInForce: TIF
 
   """
   Divides order to specified number of smaller orders that will be executed consecutively.
