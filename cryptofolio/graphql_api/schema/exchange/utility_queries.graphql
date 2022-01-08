@@ -1,4 +1,4 @@
-extend type Query {
+type Query {
   """
   exchangeInfo fetches data regarding order placement for given pairs of symbols
   """
