@@ -6,3 +6,29 @@ type AssetPair {
   baseAsset: String!
   quoteAsset: String!
 }
+
+"""
+AccountInformationResult type is a response type for accountInformation mutation. It consists of possible error msg, status and account information itself.
+"""
+type AccountInformationResult {
+  success: Boolean!
+  msg: String!
+  AccountInformation: AccountInformation
+}
+
+"""
+AccountInformation type holds general data about contents of user's wallet like: total value and it's percentage change over a period o time.
+"""
+type AccountInformation {
+  totalValue: Float!
+  valueChangePercentage: Float!
+  balances: [Balance]!
+}
+
+"""
+Balance type holds comprehensive data regarding single asset avaible on SPOT market in user's wallet.
+"""
+type Balance {
+  asset: String!
+  percentage: Float!
+}

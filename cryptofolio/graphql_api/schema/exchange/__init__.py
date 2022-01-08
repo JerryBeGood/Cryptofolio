@@ -16,6 +16,9 @@ exchange_mutation.set_field('SPOTMarketOrder',
 exchange_mutation.set_field('SPOTStopLossLimitOrder',
                             exchange.spot_stop_loss_limit_order_resolver)
 
+exchange_mutation.set_field('accountInfo',
+                            exchange.account_info_resolver)
+
 # Queries
 exchange_query.set_field('exchangeInfo',
                          exchange.exchange_info_resolver)
