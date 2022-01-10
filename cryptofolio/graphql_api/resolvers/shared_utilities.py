@@ -78,7 +78,7 @@ def binance_exchange_info():
     payload = {}
 
     with requests.get(
-            f'https://api1.binance.com/api/v3/exchangeInfo') as response:
+            'https://api1.binance.com/api/v3/exchangeInfo') as response:
 
         response_json = response.json()
 
