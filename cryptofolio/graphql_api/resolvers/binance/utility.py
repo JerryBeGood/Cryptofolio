@@ -4,10 +4,33 @@ import hmac
 import hashlib
 
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
+from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info, validate_token, fetch_exchange_credentials
+from cryptofolio import app
 
 BINANCE_EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
+
+
+def binance_account_info(authToken, recvWindow=5000):
+
+    # Validate token
+    token_validation_payload = validate_token(authToken)
+    print(token_validation_payload)
+    if not token_validation_payload[0]:
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+
+    # Fetch exchange credentials
+    exchange_credentials = fetch_exchange_credentials(
+        token_validation_payload[1], 'binance')
+    if not exchange_credentials[0]:
+        return {'success': False, 'msg': exchange_credentials[1]}
+
+    response_json = binance_account_info_request(
+        exchange_credentials[1], exchange_credentials[2], recvWindow)
+
+    account_information = binance_prepare_account_info_data(response_json)
+
+    return {'success': True, 'msg': 'Ok', 'AccountInformation': account_information}
 
 
 def binance_exchange_info(symbols=None):
@@ -194,6 +217,7 @@ def binance_prepare_account_info_data(response_json):
     for asset in response_json['balances']:
         balance = {}
         balance['asset'] = asset['asset']
+        balance['value'] = round(float(asset['free']), 3)
 
         if asset['asset'] in ['USDT', 'BUSD']:
             balance['percentage'] = float(asset['free'])
@@ -216,11 +240,11 @@ def binance_prepare_account_info_data(response_json):
                 ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
                 ['priceChangePercent']) * (asset['percentage'] / 100)
         asset['percentage'] = round(
-            asset['percentage'] / (account_information['totalValue'] / 100), 2)
+            asset['percentage'] / (account_information['totalValue'] / 100), 3)
 
     account_information['totalValue'] = round(
         account_information['totalValue'], 2)
     account_information['valueChangePercentage'] = round(
-        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
+        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
 
     return account_information

@@ -1,7 +1,7 @@
 import time
 
 from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
-from .utility import make_order, make_order_signature
+from .utility import make_order, make_signature
 
 
 def bybit_spot_limit_order(authToken, order):
@@ -30,7 +30,7 @@ def bybit_spot_limit_order(authToken, order):
         'price': order['price']
     }
 
-    params['sign'] = make_order_signature(params, exchange_credentials[2])
+    params['sign'] = make_signature(params, exchange_credentials[2])
     payload = make_order(params)
 
     return payload
@@ -60,7 +60,7 @@ def bybit_spot_market_order(authToken, order):
         'qty': order['quantity']
     }
 
-    params['sign'] = make_order_signature(params, exchange_credentials[2])
+    params['sign'] = make_signature(params, exchange_credentials[2])
     payload = make_order(params)
 
     return payload

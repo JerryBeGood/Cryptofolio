@@ -1,6 +1,16 @@
-extend type Query {
+type Query {
   """
   exchangeInfo fetches data regarding order placement for given pairs of symbols
   """
   exchangeInfo(exchange: EXCHANGE! symbols: [String!]): [AssetPair!]
+}
+
+extend type Mutation {
+  """
+  accountInfo retrieves data regarding user's account on SPOT market. API_key and secret are the means by which API identifies a user.
+  """
+  accountInfo(
+    exchange: EXCHANGE!
+    authToken: String!
+  ): AccountInformationResult
 }
