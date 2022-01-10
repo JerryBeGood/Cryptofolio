@@ -217,6 +217,7 @@ def binance_prepare_account_info_data(response_json):
     for asset in response_json['balances']:
         balance = {}
         balance['asset'] = asset['asset']
+        balance['value'] = round(float(asset['free']), 3)
 
         if asset['asset'] in ['USDT', 'BUSD']:
             balance['percentage'] = float(asset['free'])
