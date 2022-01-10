@@ -5,6 +5,7 @@ import hashlib
 
 
 from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info, validate_token, fetch_exchange_credentials
+from cryptofolio import app
 
 BINANCE_EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
@@ -21,7 +22,6 @@ def binance_account_info(authToken, recvWindow=5000):
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
         token_validation_payload[1], 'binance')
-    print(exchange_credentials)
     if not exchange_credentials[0]:
         return {'success': False, 'msg': exchange_credentials[1]}
 
@@ -239,11 +239,11 @@ def binance_prepare_account_info_data(response_json):
                 ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
                 ['priceChangePercent']) * (asset['percentage'] / 100)
         asset['percentage'] = round(
-            asset['percentage'] / (account_information['totalValue'] / 100), 2)
+            asset['percentage'] / (account_information['totalValue'] / 100), 3)
 
     account_information['totalValue'] = round(
         account_information['totalValue'], 2)
     account_information['valueChangePercentage'] = round(
-        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
+        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
 
     return account_information

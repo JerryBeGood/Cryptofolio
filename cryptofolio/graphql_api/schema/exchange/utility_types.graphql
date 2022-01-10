@@ -31,4 +31,5 @@ Balance type holds comprehensive data regarding single asset avaible on SPOT mar
 type Balance {
   asset: String!
   percentage: Float!
+  value: Float
 }

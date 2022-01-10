@@ -3,13 +3,71 @@ import requests
 import hmac
 import hashlib
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info
+from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info, validate_token, fetch_exchange_credentials
 from cryptofolio import app
 
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 
 
-def make_order_signature(params, secret):
+def bybit_account_info(authToken):
+
+    # Validate token
+    token_validation_payload = validate_token(authToken)
+    print(token_validation_payload)
+    if not token_validation_payload[0]:
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+
+    # Fetch exchange credentials
+    exchange_credentials = fetch_exchange_credentials(
+        token_validation_payload[1], 'bybit')
+    if not exchange_credentials[0]:
+        return {'success': False, 'msg': exchange_credentials[1]}
+
+    timestamp = int(round(time.time() * 1000))
+    params = {
+        'api_key': exchange_credentials[1],
+        'timestamp': timestamp,
+    }
+    params['sign'] = make_signature(params, exchange_credentials[2])
+
+    with requests.get(f'{app.config.get("BYBIT")}/spot/v1/account',
+                      params=params) as response:
+
+        payload = {}
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            payload['success'] = True
+            payload['msg'] = 'Ok'
+            payload['AccountInformation'] = prepare_account_info_data(response_json)
+        else:
+            payload['success'] = False
+            payload['msg'] = response_json['ret_msg']
+
+        return payload
+
+
+def prepare_account_info_data(response_json):
+    account_information = {}
+    account_information['totalValue'] = 0.0
+    account_information['valueChangePercentage'] = 14.63
+    account_information['balances'] = []
+
+    for balance in response_json['result']['balances']:
+        asset = {}
+        asset['asset'] = balance['coin']
+        asset['value'] = float(balance['total'])
+        account_information['totalValue'] += float(round(asset['value'], 3))
+        account_information['balances'].append(asset)
+
+    for balance in account_information['balances']:
+        balance['percentage'] = round(
+            balance['value'] / (account_information['totalValue'] / 100), 3)
+
+    return account_information
+
+
+def make_signature(params, secret):
     request_body = ""
     for key in sorted(params.keys()):
         v = params[key]
