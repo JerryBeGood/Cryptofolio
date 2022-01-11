@@ -1,3 +1,10 @@
+type OpenOrdersResult {
+  success: Boolean!
+  msg: String!
+  openOrders: [OpenOrder]!
+}
+
+
 """
 OpenOrder is a type that contains data about given currently open order.
 """
