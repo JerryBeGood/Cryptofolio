@@ -4,7 +4,6 @@ from cryptofolio.graphql_api.resolvers.bybit.orders import bybit_spot_limit_orde
 
 
 def spot_limit_order_resolver(obj, info, exchange, authToken, order):
-
     if exchange == "binance":
         return binance_spot_limit_order(authToken, order)
     elif exchange == "bybit":

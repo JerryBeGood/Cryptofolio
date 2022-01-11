@@ -11,7 +11,7 @@ def open_orders_resolver(obj, info, exchange, authToken):
 
     # Fetch exchange credentials
     exchange_credentials = fetch_exchange_credentials(
-        token_validation_payload[1], 'bybit')
+        token_validation_payload[1], exchange)
     if not exchange_credentials[0]:
         return {'success': False, 'msg': exchange_credentials[1], 'orders': []}
 

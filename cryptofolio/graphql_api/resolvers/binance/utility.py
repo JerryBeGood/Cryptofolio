@@ -1,5 +1,6 @@
 import requests
 import time
+import datetime
 import hmac
 import hashlib
 
@@ -12,18 +13,39 @@ ASSET_TICKER_INFO = binance_asset_ticker_info()
 
 
 def binance_open_orders(exchange_credentials):
-    return {
-        'success': True,
-        'msg': 'Ok',
-        'orders': []
-    }
+    payload = {}
+    timestamp = int(round(time.time() * 1000))
+    request_body = f'recvWindow=5000&timestamp={timestamp}'
+    signature = hmac.new(exchange_credentials[2].encode(),
+                         request_body.encode('UTF-8'),
+                         digestmod=hashlib.sha256).hexdigest()
+
+    with requests.get(f'{app.config.get("BINANCE")}/api/v3/openOrders',
+                      params={
+                          'recvWindow': 5000,
+                          'timestamp': timestamp,
+                          'signature': signature
+                      },
+                      headers={'X-MBX-APIKEY': exchange_credentials[1]}) as response:
+
+        response_json = response.json()
+
+        if response.status_code != 200:
+            payload['success'] = False
+            payload['msg'] = response_json['msg']
+            payload['orders'] = []
+        else:
+            payload['success'] = True
+            payload['msg'] = 'Ok'
+            payload['orders'] = prepare_open_orders_data(response_json)
+
+    return payload
 
 
 def binance_account_info(authToken, recvWindow=5000):
 
     # Validate token
     token_validation_payload = validate_token(authToken)
-    print(token_validation_payload)
     if not token_validation_payload[0]:
         return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
@@ -54,6 +76,24 @@ def binance_exchange_info(symbols=None):
                 payload.append(BINANCE_EXCHANGE_INFO[symbol])
 
     return payload
+
+
+def prepare_open_orders_data(response_json):
+    orders = []
+    for position in response_json:
+        order = {}
+        order['pair'] = position['symbol']
+        order['type'] = position['type']
+        order['side'] = position['side']
+        order['price'] = position['price']
+        order['origQty'] = position['origQty']
+        order['execQty'] = position['executedQty']
+        order['status'] = position['status']
+        order['time'] = datetime.datetime.utcfromtimestamp(
+            int(position['time'])//1000)
+        orders.append(order)
+
+    return orders
 
 
 def validate_binance_credentials(API_key, secret):
@@ -90,7 +130,6 @@ def make_order(params, api_key):
                        }) as response:
 
         response_json = response.json()
-        print(f'RESPONSE: {response_json}')
 
         if response.status_code != 200:
             payload['success'] = False
@@ -142,7 +181,6 @@ def prepare_spot_market_order_request_body(order, timestamp):
     else:
         request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=MARKET&quoteOrderQty={order["quantity"]}&timestamp={timestamp}'
 
-    print(request_body)
     return request_body
 
 
@@ -177,7 +215,7 @@ def prepare_spot_market_limit_order_params(order, timestamp):
 
     params['quantity'] = order['quantity']
     params['timeInForce'] = order['timeInForce'] if 'timeInForce' in order.keys(
-    ) else 'GTC',
+    ) else 'GTC'
     params['price'] = order['price']
     params['timestamp'] = timestamp
 
@@ -188,7 +226,7 @@ def prepare_spot_market_limit_order_request_body(order, timestamp):
 
     request_body = ''
     timeInForce = order['timeInForce'] if 'timeInForce' in order.keys(
-    ) else 'GTC',
+    ) else 'GTC'
 
     if 'icebergQty' in order.keys():
         request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={timeInForce}&price={order["price"]}&timestamp={timestamp}'
