@@ -1,4 +1,5 @@
 import time
+import datetime
 import requests
 import hmac
 import hashlib
@@ -9,12 +10,32 @@ from cryptofolio import app
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 
 
-def bybit_open_orders(authToken):
-    return {
-        'success': True,
-        'msg': 'Ok',
-        'orders': []
+def bybit_open_orders(exchange_credentials):
+
+    timestamp = int(round(time.time() * 1000))
+    params = {
+        'api_key': exchange_credentials[1],
+        'timestamp': timestamp,
     }
+    params['sign'] = make_signature(params, exchange_credentials[2])
+
+    with requests.get(f'{app.config.get("BYBIT")}/spot/v1/open-orders',
+                      params=params) as response:
+
+        payload = {}
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            payload['success'] = True
+            payload['msg'] = 'Ok'
+            payload['orders'] = prepare_open_orders_data(
+                response_json)
+        else:
+            payload['success'] = False
+            payload['msg'] = response_json['ret_msg']
+            payload['orders'] = []
+
+        return payload
 
 
 def bybit_account_info(authToken):
@@ -54,6 +75,23 @@ def bybit_account_info(authToken):
             payload['msg'] = response_json['ret_msg']
 
         return payload
+
+
+def prepare_open_orders_data(response_json):
+    orders = []
+    for position in response_json['result']:
+        order = {}
+        order['pair'] = position['symbol']
+        order['type'] = position['type']
+        order['side'] = position['side']
+        order['price'] = position['price']
+        order['origQty'] = position['origQty']
+        order['execQty'] = position['executedQty']
+        order['status'] = position['status']
+        order['time'] = datetime.datetime.utcfromtimestamp(int(position['time'])//1000)
+        orders.append(order)
+
+    return orders
 
 
 def prepare_account_info_data(response_json):

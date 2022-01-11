@@ -12,9 +12,9 @@ type OpenOrder {
   pair: String!
   type: String!
   side: SIDE!
-  price: float!
-  origQty: float!
-  execQty: float!
+  price: Float!
+  origQty: Float!
+  execQty: Float!
   time: String!
   status: STATUS!
 }
