@@ -11,7 +11,7 @@ BINANCE_EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
 
 
-def binance_open_orders(authToken):
+def binance_open_orders(exchange_credentials):
     return {
         'success': True,
         'msg': 'Ok',
