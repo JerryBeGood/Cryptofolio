@@ -9,6 +9,14 @@ from cryptofolio import app
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 
 
+def bybit_open_orders(authToken):
+    return {
+        'success': True,
+        'msg': 'Ok',
+        'orders': []
+    }
+
+
 def bybit_account_info(authToken):
 
     # Validate token
@@ -39,7 +47,8 @@ def bybit_account_info(authToken):
         if response_json['ret_code'] == 0:
             payload['success'] = True
             payload['msg'] = 'Ok'
-            payload['AccountInformation'] = prepare_account_info_data(response_json)
+            payload['AccountInformation'] = prepare_account_info_data(
+                response_json)
         else:
             payload['success'] = False
             payload['msg'] = response_json['ret_msg']

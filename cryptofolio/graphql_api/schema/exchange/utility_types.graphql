@@ -1,7 +1,7 @@
 type OpenOrdersResult {
   success: Boolean!
   msg: String!
-  openOrders: [OpenOrder]!
+  orders: [OpenOrder]!
 }
 
 

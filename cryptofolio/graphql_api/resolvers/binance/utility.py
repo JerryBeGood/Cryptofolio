@@ -11,6 +11,14 @@ BINANCE_EXCHANGE_INFO = binance_exchange_info()
 ASSET_TICKER_INFO = binance_asset_ticker_info()
 
 
+def binance_open_orders(authToken):
+    return {
+        'success': True,
+        'msg': 'Ok',
+        'orders': []
+    }
+
+
 def binance_account_info(authToken, recvWindow=5000):
 
     # Validate token

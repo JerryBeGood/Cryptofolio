@@ -20,5 +20,7 @@ exchange_mutation.set_field('accountInfo',
                             exchange.account_info_resolver)
 
 # Queries
+exchange_query.set_field('openOrders',
+                         exchange.open_orders_resolver)
 exchange_query.set_field('exchangeInfo',
                          exchange.exchange_info_resolver)
