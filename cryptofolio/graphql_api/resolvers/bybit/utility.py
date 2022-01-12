@@ -100,15 +100,17 @@ def prepare_account_info_data(response_json):
     account_information['balances'] = []
 
     for balance in response_json['result']['balances']:
-        asset = {}
-        asset['asset'] = balance['coin']
-        asset['value'] = float(balance['total'])
-        account_information['totalValue'] += float(round(asset['value'], 3))
-        account_information['balances'].append(asset)
+        if balance['value'] != 0.0 and balance['value'] is not None:
+            asset = {}
+            asset['asset'] = balance['coin']
+            asset['value'] = float(balance['total'])
+            account_information['totalValue'] += float(round(asset['value'], 3))
+            account_information['balances'].append(asset)
 
-    for balance in account_information['balances']:
-        balance['percentage'] = round(
-            balance['value'] / (account_information['totalValue'] / 100), 3)
+    if account_information['totalValue'] != 0:
+        for balance in account_information['balances']:
+            balance['percentage'] = round(
+                balance['value'] / (account_information['totalValue'] / 100), 3)
 
     return account_information
 

@@ -251,6 +251,7 @@ def binance_account_info_request(API_key, secret, recvWindow):
                       },
                       headers={'X-MBX-APIKEY': API_key}) as response:
 
+        # print(response.json())
         return response.json()
 
 
@@ -265,32 +266,35 @@ def binance_prepare_account_info_data(response_json):
         balance['asset'] = asset['asset']
         balance['value'] = round(float(asset['free']), 3)
 
-        if asset['asset'] in ['USDT', 'BUSD']:
+        if balance['value'] != 0.0 and balance['value'] is not None:
             balance['percentage'] = float(asset['free'])
-            account_information['totalValue'] += balance['percentage']
-        else:
-            if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
-                balance['percentage'] = float(
-                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                    ['price']) * float(asset['free'])
+
+            if asset['asset'] in ['USDT', 'BUSD']:
+                balance['percentage'] = float(asset['free'])
+                account_information['totalValue'] += balance['percentage']
             else:
-                balance['percentage'] = None
+                if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
+                    balance['percentage'] = float(
+                        ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                        ['price']) * float(asset['free'])
+                    account_information['totalValue'] += balance['percentage']
+                else:
+                    balance['percentage'] = None
 
-            account_information['totalValue'] += balance['percentage']
+            account_information['balances'].append(balance)
 
-        account_information['balances'].append(balance)
+    if account_information['totalValue'] != 0.0:
+        for asset in account_information['balances']:
+            if asset['asset'] not in ['USDT', 'BUSD']:
+                account_information['valueChangePercentage'] += float(
+                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                    ['priceChangePercent']) * (asset['percentage'] / 100)
+            asset['percentage'] = round(
+                asset['percentage'] / (account_information['totalValue'] / 100), 3)
 
-    for asset in account_information['balances']:
-        if asset['asset'] not in ['USDT', 'BUSD']:
-            account_information['valueChangePercentage'] += float(
-                ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                ['priceChangePercent']) * (asset['percentage'] / 100)
-        asset['percentage'] = round(
-            asset['percentage'] / (account_information['totalValue'] / 100), 3)
-
-    account_information['totalValue'] = round(
-        account_information['totalValue'], 2)
-    account_information['valueChangePercentage'] = round(
-        account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
+        account_information['totalValue'] = round(
+            account_information['totalValue'], 2)
+        account_information['valueChangePercentage'] = round(
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
 
     return account_information
