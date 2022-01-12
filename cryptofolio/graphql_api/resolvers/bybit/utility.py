@@ -42,7 +42,6 @@ def bybit_account_info(authToken):
 
     # Validate token
     token_validation_payload = validate_token(authToken)
-    print(token_validation_payload)
     if not token_validation_payload[0]:
         return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
 
@@ -143,10 +142,7 @@ def make_order(params):
                            "Content-Type": "application/x-www-form-urlencoded"
                        }) as response:
 
-        print(response.url)
         response_json = response.json()
-
-        print(response_json)
 
         if response_json['ret_code'] == 0:
             payload['success'] = True

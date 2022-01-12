@@ -4,19 +4,7 @@ from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, f
 from .utility import make_order, make_signature
 
 
-def bybit_spot_limit_order(authToken, order):
-
-    # Validate token
-    token_validation_payload = validate_token(authToken)
-    if not token_validation_payload[0]:
-        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
-
-    # Fetch exchange credentials
-    exchange_credentials = fetch_exchange_credentials(
-        token_validation_payload[1], 'bybit')
-    if not exchange_credentials[0]:
-        return {'success': False, 'msg': exchange_credentials[1]}
-
+def bybit_spot_limit_order(exchange_credentials, order):
     # Prepare request body
     timestamp = int(round(time.time() * 1000))
     params = {
@@ -36,18 +24,7 @@ def bybit_spot_limit_order(authToken, order):
     return payload
 
 
-def bybit_spot_market_order(authToken, order):
-
-    # Validate token
-    token_validation_payload = validate_token(authToken)
-    if not token_validation_payload[0]:
-        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
-
-    # Fetch exchange credentials
-    exchange_credentials = fetch_exchange_credentials(
-        token_validation_payload[1], 'bybit')
-    if not exchange_credentials[0]:
-        return {'success': False, 'msg': exchange_credentials[1]}
+def bybit_spot_market_order(exchange_credentials, order):
 
     # Prepare request body
     timestamp = int(round(time.time() * 1000))
