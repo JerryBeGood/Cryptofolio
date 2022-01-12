@@ -16,8 +16,8 @@ class BaseConfig:
     MAIL_PASSWORD = 'Cryptofolio1'
 
     # """Exchanges urls"""
-    BINANCE = 'https://testnet.binance.vision'
-    BYBIT = 'https://api-testnet.bybit.com'
+    BINANCE = 'https://api.binance.com'
+    BYBIT = 'https://api.bybit.com'
 
 
 class DevelopmentConfig(BaseConfig):
