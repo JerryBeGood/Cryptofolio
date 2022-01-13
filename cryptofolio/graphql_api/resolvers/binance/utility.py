@@ -4,6 +4,8 @@ import datetime
 import hmac
 import hashlib
 
+from pytz import timezone
+
 
 from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
 from cryptofolio import app
@@ -67,7 +69,8 @@ def binance_account_info(exchange_credentials):
         else:
             payload['success'] = True
             payload['msg'] = 'Ok'
-            payload['AccountInformation'] = binance_prepare_account_info_data(response_json)
+            payload['AccountInformation'] = binance_prepare_account_info_data(
+                response_json)
 
         return payload
 
@@ -98,8 +101,8 @@ def prepare_open_orders_data(response_json):
         order['origQty'] = position['origQty']
         order['execQty'] = position['executedQty']
         order['status'] = position['status']
-        order['time'] = datetime.datetime.utcfromtimestamp(
-            int(position['time'])//1000)
+        order['time'] = datetime.datetime.fromtimestamp(
+            int(position['time'])//1000, timezone('Europe/Warsaw'))
         orders.append(order)
 
     return orders

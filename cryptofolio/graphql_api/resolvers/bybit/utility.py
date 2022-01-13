@@ -4,6 +4,8 @@ import requests
 import hmac
 import hashlib
 
+from pytz import timezone
+
 from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_asset_ticker_info, bybit_exchange_info
 from cryptofolio import app
 
@@ -77,8 +79,8 @@ def prepare_open_orders_data(response_json):
         order['origQty'] = position['origQty']
         order['execQty'] = position['executedQty']
         order['status'] = position['status']
-        order['time'] = datetime.datetime.utcfromtimestamp(
-            int(position['time'])//1000)
+        order['time'] = datetime.datetime.fromtimestamp(
+            int(position['time'])//1000, timezone('Europe/Warsaw'))
         orders.append(order)
 
     return orders
@@ -118,9 +120,7 @@ def prepare_account_info_data(response_json):
         for balance in account_information['balances']:
             balance_change = day_change_percentage(
                 symbol=f"{balance['asset']}USDT")
-            # print(f'{balance["asset"]}: {balance_change} | balance['value']')
             balance_change_value = balance_change * (balance['value'] / 100)
-            print(balance_change_value)
             account_information['valueChangePercentage'] += balance_change_value
 
         account_information['valueChangePercentage'] = round(
