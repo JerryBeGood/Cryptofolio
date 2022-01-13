@@ -99,6 +99,8 @@ def prepare_account_info_data(response_json):
             if asset['asset'] == 'USDT':
                 asset['quantity'] = round(float(balance['free']), 3)
                 asset['value'] = asset['quantity']
+                account_information['totalValue'] += float(
+                    round(asset['value'], 3))
             else:
                 asset['quantity'] = round(float(balance['free']), 3)
                 asset['value'] = round(asset['quantity'] * float(
@@ -113,7 +115,41 @@ def prepare_account_info_data(response_json):
             balance['percentage'] = round(
                 balance['value'] / (account_information['totalValue'] / 100), 3)
 
+        for balance in account_information['balances']:
+            balance_change = day_change_percentage(
+                symbol=f"{balance['asset']}USDT")
+            # print(f'{balance["asset"]}: {balance_change} | balance['value']')
+            balance_change_value = balance_change * (balance['value'] / 100)
+            print(balance_change_value)
+            account_information['valueChangePercentage'] += balance_change_value
+
+        account_information['valueChangePercentage'] = round(
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3) - 100
+
     return account_information
+
+
+def day_change_percentage(symbol: str):
+
+    payload = 0
+
+    with requests.get(
+            url=f'{app.config.get("BYBIT")}/spot/quote/v1/kline',
+            params={
+                'symbol': symbol,
+                'interval': '1d',
+                'limit': 1
+            }) as response:
+
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            open = float(response_json['result'][0][1])
+            close = float(response_json['result'][0][4])
+
+            payload = round(close / (open / 100) - 100, 3)
+
+    return payload
 
 
 def make_signature(params, secret):

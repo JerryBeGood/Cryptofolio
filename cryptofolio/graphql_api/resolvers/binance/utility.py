@@ -11,7 +11,6 @@ from cryptofolio import app
 BINANCE_EXCHANGE_INFO = binance_exchange_info()
 BINANCE_ASSET_TICKER_INFO = binance_asset_ticker_info()
 
-print(BINANCE_ASSET_TICKER_INFO)
 
 def binance_open_orders(exchange_credentials):
     payload = {}
