@@ -5,7 +5,7 @@ type OrderResponse {
   """
   Whether the order was successful or not
   """
-  succes: Boolean!
+  success: Boolean!
   """
   Status of an oder
   """
@@ -18,6 +18,64 @@ type OrderResponse {
   Message describing error code usually regarding limits connected to each pair -> ExchangeInfo
   """
   msg: String
+}
+
+"""
+Limit order - sell or buy an asset at a specific price or better
+"""
+input LimitOrder {
+  """
+  A pair of assets that are trade for one another - base and quote asset
+  """
+  symbol: String!
+
+  """
+  BUY or SELL
+  """
+  side: SIDE!
+
+  """
+  Amount of asset to be sold or bought
+  """
+  quantity: Float!
+
+  """
+  Limit price for which assets will be bought or sold
+  """
+  price: Float!
+
+  """
+  This sets how long an order will be active before expiration
+  """
+  timeInForce: TIF
+
+  """
+  Divides order to specified number of smaller orders that will be executed consecutively.
+  If limit order is set to be also an iceberg order the timeInForce must be set to GTC.
+  """
+  icebergQty: Int
+}
+
+"""
+Market order - sell or buy an asset immediately
+"""
+input MarketOrder {
+  """
+  A pair of assets that are trade for one another - base and quote asset
+  """
+  symbol: String!
+
+  """
+  BUY or SELL
+  """
+  side: SIDE!
+
+  """
+  When base is True, quantity field specifies the amount of base asset(first in a pair) the user wants to buy or sell.
+  """
+  base: Boolean
+  
+  quantity: Float!
 }
 
 """
@@ -52,63 +110,6 @@ input StopLossLimitOrder {
   stopPrice: Float!
 }
 
-"""
-Limit order - sell or buy an asset at a specific price or better
-"""
-input LimitOrder {
-  """
-  A pair of assets that are trade for one another - base and quote asset
-  """
-  symbol: String!
-  """
-  BUY or SELL
-  """
-  side: SIDE!
-  """
-  Divides order to specified number of smaller orders that will be executed consecutively.
-  If limit order is set to be also an iceberg order the timeInForce must be set to GTC.
-  """
-  icebergQty: Int
-  """
-  This sets how long an order will be active before expiration
-  """
-  timeInForce: TIF!
-  """
-  Amount of asset to be sold or bought
-  """
-  quantity: Float!
-  """
-  Limit price for which assets will be bought or sold
-  """
-  price: Float!
-}
-
-"""
-Market order - sell or buy an asset immediately
-"""
-input MarketOrder {
-  """
-  A pair of assets that are trade for one another - base and quote asset
-  """
-  symbol: String!
-  """
-  BUY or SELL
-  """
-  side: SIDE!
-  """
-  Time window in which request ought to be received otherwise is cancelled
-  """
-  recvWindow: Int
-  """
-  When base is True, quantity field specifies the amount of base asset(first in a pair) the user wants to buy or sell.
-  For example sending order on BTCUSDT will specify how much BTC user is buying or selling.
-  When base is False, quantity field specifies the amount the user wants to spend(when buying) or receive(when selling) the quote asset(second in a pair).
-  For example sending order on BTCUSDT on the BUY side will buy as many BTC as quantity USDT can.
-  """
-  base: Boolean!
-  quantity: Float!
-}
-
 enum TIF {
   """
   Good Til Canceled
@@ -132,6 +133,11 @@ enum SIDE {
   SELL
 }
 
+enum EXCHANGE {
+  binance
+  bybit
+}
+
 """
 Status of an order
 """
@@ -151,7 +157,7 @@ enum STATUS {
   """
   The order has been canceled by the user.
   """
-  CANCELLED
+  CANCELED
   """
   Currently unused
   """

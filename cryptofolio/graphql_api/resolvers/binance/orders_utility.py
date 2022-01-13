@@ -1,11 +1,14 @@
 import requests
 
+from cryptofolio import app
+from cryptofolio.graphql_api.resolvers.binance.utility import BINANCE_EXCHANGE_INFO
+
 
 def make_order(params, api_key):
 
     payload = {}
 
-    with requests.post('https://api1.binance.com/api/v3/order',
+    with requests.post(f'{app.config.get("BINANCE")}/api/v3/order',
                        params=params,
                        headers={
                            'X-MBX-APIKEY': api_key,
@@ -13,17 +16,40 @@ def make_order(params, api_key):
                        }) as response:
 
         response_json = response.json()
-        print(f'RESPONSE: {response_json}')
 
         if response.status_code != 200:
-            payload['succes'] = False
+            payload['success'] = False
             payload['code'] = response_json['code']
-            payload['msg'] = response_json['msg']
+            payload['msg'] = describe_order_error(params['symbol'], response_json['msg'])
         else:
-            payload['succes'] = True
+            payload['success'] = True
             payload['status'] = response_json['status']
 
     return payload
+
+
+def describe_order_error(symbol, error):
+    error = error[16:]
+    symbol = BINANCE_EXCHANGE_INFO[symbol]
+
+    if error == 'PRICE_FILTER':
+        high = float(symbol['filters'][0]['maxPrice'])
+        low = float(symbol['filters'][0]['minPrice'])
+        return f'Price for this symbol must be between {high:g} and {low:g}'
+    elif error == 'PERCENT_PRICE':
+        minutes = symbol['filters'][1]['avgPriceMins']
+        return f'Price is too low or too high from the average weighted price over the last {minutes} minutes'
+    elif error == 'LOT_SIZE':
+        high = float(symbol['filters'][2]['maxQty'])
+        low = float(symbol['filters'][2]['minQty'])
+        return f'Quantity for this symbol must be between {high:g} and {low:g}'
+    elif error == 'MIN_NOTIONAL':
+        min_order_value = float(symbol['filters'][3]['minNotional'])
+        return f'Value of the order must be greater than {min_order_value:g}'
+    elif error == 'MAX_NUM_ORDERS':
+        return 'Account has too many open orders on the symbol'
+
+    return error[16:]
 
 
 def prepare_stop_loss_order_request_body(order, timestamp):
@@ -65,7 +91,6 @@ def prepare_spot_market_order_request_body(order, timestamp):
     else:
         request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=MARKET&quoteOrderQty={order["quantity"]}&timestamp={timestamp}'
 
-    print(request_body)
     return request_body
 
 
@@ -99,7 +124,8 @@ def prepare_spot_market_limit_order_params(order, timestamp):
         params['icebergQty'] = order['icebergQty']
 
     params['quantity'] = order['quantity']
-    params['timeInForce'] = order['timeInForce']
+    params['timeInForce'] = order['timeInForce'] if 'timeInForce' in order.keys(
+    ) else 'GTC'
     params['price'] = order['price']
     params['timestamp'] = timestamp
 
@@ -109,10 +135,12 @@ def prepare_spot_market_limit_order_params(order, timestamp):
 def prepare_spot_market_limit_order_request_body(order, timestamp):
 
     request_body = ''
+    timeInForce = order['timeInForce'] if 'timeInForce' in order.keys(
+    ) else 'GTC'
 
     if 'icebergQty' in order.keys():
-        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&timestamp={timestamp}'
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&icebergQty={order["icebergQty"]}&quantity={order["quantity"]}&timeInForce={timeInForce}&price={order["price"]}&timestamp={timestamp}'
     else:
-        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&quantity={order["quantity"]}&timeInForce={order["timeInForce"]}&price={order["price"]}&timestamp={timestamp}'
+        request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&quantity={order["quantity"]}&timeInForce={timeInForce}&price={order["price"]}&timestamp={timestamp}'
 
     return request_body
