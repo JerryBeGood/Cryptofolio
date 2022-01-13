@@ -139,7 +139,7 @@ def binance_prepare_account_info_data(response_json):
     for asset in response_json['balances']:
         balance = {}
         balance['asset'] = asset['asset']
-        balance['quantity'] = round(float(asset['free']), 3)
+        balance['quantity'] = round(float(asset['free']), 2)
 
         if balance['quantity'] != 0.0 and balance['quantity'] is not None:
 
@@ -150,7 +150,7 @@ def binance_prepare_account_info_data(response_json):
                 if f'{asset["asset"]}USDT' in BINANCE_ASSET_TICKER_INFO.keys():
                     balance['value'] = round(float(
                         BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                        ['price']) * float(asset['free']), 3)
+                        ['price']) * float(asset['free']), 2)
                     account_information['totalValue'] += balance['value']
                 else:
                     balance['percentage'] = None
@@ -164,12 +164,11 @@ def binance_prepare_account_info_data(response_json):
                     BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
                     ['priceChangePercent']) * (asset['value'] / 100)
             asset['percentage'] = round(
-                asset['value'] / (account_information['totalValue'] / 100), 3)
+                asset['value'] / (account_information['totalValue'] / 100), 2)
 
         account_information['totalValue'] = round(
-            account_information['totalValue'], 3)
+            account_information['totalValue'], 2)
         account_information['valueChangePercentage'] = round(
-            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
 
     return account_information
-

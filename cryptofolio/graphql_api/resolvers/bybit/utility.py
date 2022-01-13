@@ -99,23 +99,23 @@ def prepare_account_info_data(response_json):
             asset['asset'] = balance['coin']
 
             if asset['asset'] == 'USDT':
-                asset['quantity'] = round(float(balance['free']), 3)
+                asset['quantity'] = round(float(balance['free']), 2)
                 asset['value'] = asset['quantity']
                 account_information['totalValue'] += float(
-                    round(asset['value'], 3))
+                    round(asset['value'], 2))
             else:
-                asset['quantity'] = round(float(balance['free']), 3)
+                asset['quantity'] = round(float(balance['free']), 2)
                 asset['value'] = round(asset['quantity'] * float(
-                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 3)
+                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 2)
                 account_information['totalValue'] += float(
-                    round(asset['value'], 3))
+                    round(asset['value'], 2))
 
             account_information['balances'].append(asset)
 
     if account_information['totalValue'] != 0:
         for balance in account_information['balances']:
             balance['percentage'] = round(
-                balance['value'] / (account_information['totalValue'] / 100), 3)
+                balance['value'] / (account_information['totalValue'] / 100), 2)
 
         for balance in account_information['balances']:
             balance_change = day_change_percentage(
@@ -124,7 +124,7 @@ def prepare_account_info_data(response_json):
             account_information['valueChangePercentage'] += balance_change_value
 
         account_information['valueChangePercentage'] = round(
-            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3) - 100
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
 
     return account_information
 
