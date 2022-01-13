@@ -1,5 +1,8 @@
 import requests
 
+from cryptofolio import app
+from cryptofolio.graphql_api.resolvers.binance.utility import BINANCE_EXCHANGE_INFO
+
 
 def make_order(params, api_key):
 
@@ -14,15 +17,41 @@ def make_order(params, api_key):
 
         response_json = response.json()
 
+        print(response_json)
+
         if response.status_code != 200:
             payload['success'] = False
             payload['code'] = response_json['code']
-            payload['msg'] = response_json['msg']
+            payload['msg'] = describe_order_error(params['symbol'], response_json['msg'])
         else:
             payload['success'] = True
             payload['status'] = response_json['status']
 
     return payload
+
+
+def describe_order_error(symbol, error):
+    error = error[16:]
+    symbol = BINANCE_EXCHANGE_INFO[symbol]
+
+    if error == 'PRICE_FILTER':
+        high = float(symbol['filters'][0]['maxPrice'])
+        low = float(symbol['filters'][0]['minPrice'])
+        return f'Price for this symbol must be between {high:g} and {low:g}'
+    elif error == 'PERCENT_PRICE':
+        minutes = symbol['filters'][1]['avgPriceMins']
+        return f'Price is too low or too high from the average weighted price over the last {minutes} minutes'
+    elif error == 'LOT_SIZE':
+        high = float(symbol['filters'][2]['maxQty'])
+        low = float(symbol['filters'][2]['minQty'])
+        return f'Quantity for this symbol must be between {high:g} and {low:g}'
+    elif error == 'MIN_NOTIONAL':
+        min_order_value = float(symbol['filters'][3]['minNotional'])
+        return f'Value of the order must be greater than {min_order_value:g}'
+    elif error == 'MAX_NUM_ORDERS':
+        return 'Account has too many open orders on the symbol'
+
+    return error[16:]
 
 
 def prepare_stop_loss_order_request_body(order, timestamp):
