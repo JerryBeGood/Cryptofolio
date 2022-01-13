@@ -4,7 +4,7 @@ import requests
 import hmac
 import hashlib
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info, validate_token, fetch_exchange_credentials
+from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info
 from cryptofolio import app
 
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
@@ -38,18 +38,7 @@ def bybit_open_orders(exchange_credentials):
         return payload
 
 
-def bybit_account_info(authToken):
-
-    # Validate token
-    token_validation_payload = validate_token(authToken)
-    if not token_validation_payload[0]:
-        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
-
-    # Fetch exchange credentials
-    exchange_credentials = fetch_exchange_credentials(
-        token_validation_payload[1], 'bybit')
-    if not exchange_credentials[0]:
-        return {'success': False, 'msg': exchange_credentials[1]}
+def bybit_account_info(exchange_credentials):
 
     timestamp = int(round(time.time() * 1000))
     params = {
@@ -87,7 +76,8 @@ def prepare_open_orders_data(response_json):
         order['origQty'] = position['origQty']
         order['execQty'] = position['executedQty']
         order['status'] = position['status']
-        order['time'] = datetime.datetime.utcfromtimestamp(int(position['time'])//1000)
+        order['time'] = datetime.datetime.utcfromtimestamp(
+            int(position['time'])//1000)
         orders.append(order)
 
     return orders
@@ -96,15 +86,16 @@ def prepare_open_orders_data(response_json):
 def prepare_account_info_data(response_json):
     account_information = {}
     account_information['totalValue'] = 0.0
-    account_information['valueChangePercentage'] = 14.63
+    account_information['valueChangePercentage'] = 0.0
     account_information['balances'] = []
 
     for balance in response_json['result']['balances']:
-        if balance['value'] != 0.0 and balance['value'] is not None:
+        if balance['free'] != 0.0 and balance['free'] is not None:
             asset = {}
             asset['asset'] = balance['coin']
-            asset['value'] = float(balance['total'])
-            account_information['totalValue'] += float(round(asset['value'], 3))
+            asset['value'] = float(balance['free'])
+            account_information['totalValue'] += float(
+                round(asset['value'], 3))
             account_information['balances'].append(asset)
 
     if account_information['totalValue'] != 0:

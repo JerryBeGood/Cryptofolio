@@ -22,10 +22,21 @@ def open_orders_resolver(obj, info, exchange, authToken):
 
 
 def account_info_resolver(obj, info, exchange, authToken):
+    # Validate token
+    token_validation_payload = validate_token(authToken)
+    if not token_validation_payload[0]:
+        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+
+    # Fetch exchange credentials
+    exchange_credentials = fetch_exchange_credentials(
+        token_validation_payload[1], exchange)
+    if not exchange_credentials[0]:
+        return {'success': False, 'msg': exchange_credentials[1]}
+
     if exchange == 'binance':
-        return binance_account_info(authToken)
+        return binance_account_info(exchange_credentials)
     elif exchange == 'bybit':
-        return bybit_account_info(authToken)
+        return bybit_account_info(exchange_credentials)
 
 
 def exchange_info_resolver(obj, info, exchange, symbols=None):

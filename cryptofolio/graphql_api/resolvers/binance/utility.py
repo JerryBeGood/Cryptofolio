@@ -42,25 +42,34 @@ def binance_open_orders(exchange_credentials):
     return payload
 
 
-def binance_account_info(authToken, recvWindow=5000):
+def binance_account_info(exchange_credentials):
 
-    # Validate token
-    token_validation_payload = validate_token(authToken)
-    if not token_validation_payload[0]:
-        return {'success': token_validation_payload[0], 'msg': token_validation_payload[1]}
+    payload = {}
+    timestamp = int(round(time.time() * 1000))
+    request_body = f'recvWindow=5000&timestamp={timestamp}'
+    signature = hmac.new(exchange_credentials[2].encode(),
+                         request_body.encode('UTF-8'),
+                         digestmod=hashlib.sha256).hexdigest()
 
-    # Fetch exchange credentials
-    exchange_credentials = fetch_exchange_credentials(
-        token_validation_payload[1], 'binance')
-    if not exchange_credentials[0]:
-        return {'success': False, 'msg': exchange_credentials[1]}
+    with requests.get(f'{app.config.get("BINANCE")}/api/v3/account',
+                      params={
+                          'recvWindow': 5000,
+                          'timestamp': timestamp,
+                          'signature': signature
+                      },
+                      headers={'X-MBX-APIKEY': exchange_credentials[1]}) as response:
 
-    response_json = binance_account_info_request(
-        exchange_credentials[1], exchange_credentials[2], recvWindow)
+        response_json = response.json()
 
-    account_information = binance_prepare_account_info_data(response_json)
+        if response.status_code != 200:
+            payload['success'] = False
+            payload['msg'] = response_json['msg']
+        else:
+            payload['success'] = True
+            payload['msg'] = 'Ok'
+            payload['AccountInformation'] = binance_prepare_account_info_data(response_json)
 
-    return {'success': True, 'msg': 'Ok', 'AccountInformation': account_information}
+        return payload
 
 
 def binance_exchange_info(symbols=None):
@@ -140,6 +149,51 @@ def make_order(params, api_key):
             payload['status'] = response_json['status']
 
     return payload
+
+
+def binance_prepare_account_info_data(response_json):
+    account_information = {}
+    account_information['totalValue'] = 0.0
+    account_information['valueChangePercentage'] = 0.0
+    account_information['balances'] = []
+
+    for asset in response_json['balances']:
+        balance = {}
+        balance['asset'] = asset['asset']
+        balance['value'] = round(float(asset['free']), 3)
+
+        if balance['value'] != 0.0 and balance['value'] is not None:
+            balance['percentage'] = float(asset['free'])
+
+            if asset['asset'] in ['USDT', 'BUSD']:
+                balance['percentage'] = float(asset['free'])
+                account_information['totalValue'] += balance['percentage']
+            else:
+                if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
+                    balance['percentage'] = float(
+                        ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                        ['price']) * float(asset['free'])
+                    account_information['totalValue'] += balance['percentage']
+                else:
+                    balance['percentage'] = None
+
+            account_information['balances'].append(balance)
+
+    if account_information['totalValue'] != 0.0:
+        for asset in account_information['balances']:
+            if asset['asset'] not in ['USDT', 'BUSD']:
+                account_information['valueChangePercentage'] += float(
+                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                    ['priceChangePercent']) * (asset['percentage'] / 100)
+            asset['percentage'] = round(
+                asset['percentage'] / (account_information['totalValue'] / 100), 3)
+
+        account_information['totalValue'] = round(
+            account_information['totalValue'], 2)
+        account_information['valueChangePercentage'] = round(
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
+
+    return account_information
 
 
 def prepare_stop_loss_order_request_body(order, timestamp):
@@ -234,67 +288,3 @@ def prepare_spot_market_limit_order_request_body(order, timestamp):
         request_body = f'symbol={order["symbol"]}&side={order["side"]}&type=LIMIT&quantity={order["quantity"]}&timeInForce={timeInForce}&price={order["price"]}&timestamp={timestamp}'
 
     return request_body
-
-
-def binance_account_info_request(API_key, secret, recvWindow):
-    timestamp = int(round(time.time() * 1000))
-    request_body = f'recvWindow={recvWindow}&timestamp={timestamp}'
-    signature = hmac.new(secret.encode(),
-                         request_body.encode('UTF-8'),
-                         digestmod=hashlib.sha256).hexdigest()
-
-    with requests.get(f'{app.config.get("BINANCE")}/api/v3/account',
-                      params={
-                          'recvWindow': recvWindow,
-                          'timestamp': timestamp,
-                          'signature': signature
-                      },
-                      headers={'X-MBX-APIKEY': API_key}) as response:
-
-        # print(response.json())
-        return response.json()
-
-
-def binance_prepare_account_info_data(response_json):
-    account_information = {}
-    account_information['totalValue'] = 0.0
-    account_information['valueChangePercentage'] = 0.0
-    account_information['balances'] = []
-
-    for asset in response_json['balances']:
-        balance = {}
-        balance['asset'] = asset['asset']
-        balance['value'] = round(float(asset['free']), 3)
-
-        if balance['value'] != 0.0 and balance['value'] is not None:
-            balance['percentage'] = float(asset['free'])
-
-            if asset['asset'] in ['USDT', 'BUSD']:
-                balance['percentage'] = float(asset['free'])
-                account_information['totalValue'] += balance['percentage']
-            else:
-                if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
-                    balance['percentage'] = float(
-                        ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                        ['price']) * float(asset['free'])
-                    account_information['totalValue'] += balance['percentage']
-                else:
-                    balance['percentage'] = None
-
-            account_information['balances'].append(balance)
-
-    if account_information['totalValue'] != 0.0:
-        for asset in account_information['balances']:
-            if asset['asset'] not in ['USDT', 'BUSD']:
-                account_information['valueChangePercentage'] += float(
-                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                    ['priceChangePercent']) * (asset['percentage'] / 100)
-            asset['percentage'] = round(
-                asset['percentage'] / (account_information['totalValue'] / 100), 3)
-
-        account_information['totalValue'] = round(
-            account_information['totalValue'], 2)
-        account_information['valueChangePercentage'] = round(
-            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
-
-    return account_information
