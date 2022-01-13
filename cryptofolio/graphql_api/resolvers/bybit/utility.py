@@ -4,10 +4,11 @@ import requests
 import hmac
 import hashlib
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_exchange_info
+from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_asset_ticker_info, bybit_exchange_info
 from cryptofolio import app
 
 BYBIT_EXCHANGE_INFO = bybit_exchange_info()
+BYBIT_ASSET_TICKER_INFO = bybit_asset_ticker_info()
 
 
 def bybit_open_orders(exchange_credentials):
@@ -84,6 +85,7 @@ def prepare_open_orders_data(response_json):
 
 
 def prepare_account_info_data(response_json):
+
     account_information = {}
     account_information['totalValue'] = 0.0
     account_information['valueChangePercentage'] = 0.0
@@ -93,9 +95,17 @@ def prepare_account_info_data(response_json):
         if balance['free'] != 0.0 and balance['free'] is not None:
             asset = {}
             asset['asset'] = balance['coin']
-            asset['value'] = float(balance['free'])
-            account_information['totalValue'] += float(
-                round(asset['value'], 3))
+
+            if asset['asset'] == 'USDT':
+                asset['quantity'] = round(float(balance['free']), 3)
+                asset['value'] = asset['quantity']
+            else:
+                asset['quantity'] = round(float(balance['free']), 3)
+                asset['value'] = round(asset['quantity'] * float(
+                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 3)
+                account_information['totalValue'] += float(
+                    round(asset['value'], 3))
+
             account_information['balances'].append(asset)
 
     if account_information['totalValue'] != 0:

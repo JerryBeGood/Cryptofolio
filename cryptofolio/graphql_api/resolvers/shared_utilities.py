@@ -106,3 +106,23 @@ def binance_asset_ticker_info():
             }
 
     return payload
+
+
+def bybit_asset_ticker_info():
+
+    payload = {}
+
+    with requests.get(
+            f'{app.config.get("BYBIT")}/spot/quote/v1/ticker/24hr') as response:
+
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            for item in response_json['result']:
+                asset = {}
+                asset['price'] = item['bestAskPrice']
+                payload[item['symbol']] = asset
+        else:
+            payload = {'Msg': 'Asset ticker info error'}
+
+        return payload

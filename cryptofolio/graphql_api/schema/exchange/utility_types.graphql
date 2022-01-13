@@ -53,4 +53,5 @@ type Balance {
   asset: String!
   percentage: Float!
   value: Float
+  quantity: Float
 }
