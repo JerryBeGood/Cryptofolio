@@ -5,12 +5,13 @@ import hmac
 import hashlib
 
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info, validate_token, fetch_exchange_credentials
+from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
 from cryptofolio import app
 
 BINANCE_EXCHANGE_INFO = binance_exchange_info()
-ASSET_TICKER_INFO = binance_asset_ticker_info()
+BINANCE_ASSET_TICKER_INFO = binance_asset_ticker_info()
 
+print(BINANCE_ASSET_TICKER_INFO)
 
 def binance_open_orders(exchange_credentials):
     payload = {}
@@ -160,20 +161,19 @@ def binance_prepare_account_info_data(response_json):
     for asset in response_json['balances']:
         balance = {}
         balance['asset'] = asset['asset']
-        balance['value'] = round(float(asset['free']), 3)
+        balance['quantity'] = round(float(asset['free']), 3)
 
-        if balance['value'] != 0.0 and balance['value'] is not None:
-            balance['percentage'] = float(asset['free'])
+        if balance['quantity'] != 0.0 and balance['quantity'] is not None:
 
             if asset['asset'] in ['USDT', 'BUSD']:
-                balance['percentage'] = float(asset['free'])
-                account_information['totalValue'] += balance['percentage']
+                balance['value'] = balance['quantity']
+                account_information['totalValue'] += balance['value']
             else:
-                if f'{asset["asset"]}USDT' in ASSET_TICKER_INFO.keys():
-                    balance['percentage'] = float(
-                        ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                        ['price']) * float(asset['free'])
-                    account_information['totalValue'] += balance['percentage']
+                if f'{asset["asset"]}USDT' in BINANCE_ASSET_TICKER_INFO.keys():
+                    balance['value'] = round(float(
+                        BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                        ['price']) * float(asset['free']), 3)
+                    account_information['totalValue'] += balance['value']
                 else:
                     balance['percentage'] = None
 
@@ -183,13 +183,13 @@ def binance_prepare_account_info_data(response_json):
         for asset in account_information['balances']:
             if asset['asset'] not in ['USDT', 'BUSD']:
                 account_information['valueChangePercentage'] += float(
-                    ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                    ['priceChangePercent']) * (asset['percentage'] / 100)
+                    BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
+                    ['priceChangePercent']) * (asset['value'] / 100)
             asset['percentage'] = round(
-                asset['percentage'] / (account_information['totalValue'] / 100), 3)
+                asset['value'] / (account_information['totalValue'] / 100), 3)
 
         account_information['totalValue'] = round(
-            account_information['totalValue'], 2)
+            account_information['totalValue'], 3)
         account_information['valueChangePercentage'] = round(
             account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 3)
 
