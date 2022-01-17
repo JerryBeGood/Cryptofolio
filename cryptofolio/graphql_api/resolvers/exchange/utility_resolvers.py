@@ -1,5 +1,5 @@
 from cryptofolio.graphql_api.resolvers.binance import binance_exchange_info, binance_account_info, binance_open_orders, binance_closed_orders
-from cryptofolio.graphql_api.resolvers.bybit import bybit_exchange_info, bybit_account_info, bybit_open_orders, binance_closed_orders
+from cryptofolio.graphql_api.resolvers.bybit import bybit_exchange_info, bybit_account_info, bybit_open_orders, bybit_closed_orders
 from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
 
 
