@@ -1,3 +1,9 @@
+type ClosedOrdersResult {
+  success: Boolean!
+  msg: String!
+  orders: [OrderInformation]!
+}
+
 type OpenOrdersResult {
   success: Boolean!
   msg: String!
