@@ -13,6 +13,14 @@ BYBIT_EXCHANGE_INFO = bybit_exchange_info()
 BYBIT_ASSET_TICKER_INFO = bybit_asset_ticker_info()
 
 
+def bybit_closed_orders(exchange_credentials):
+    return {
+        'success': True,
+        'msg': 'Ok',
+        'orders': []
+    }
+
+
 def bybit_open_orders(exchange_credentials):
 
     timestamp = int(round(time.time() * 1000))

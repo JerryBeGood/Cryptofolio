@@ -15,6 +15,14 @@ BINANCE_ASSET_TICKER_INFO = binance_asset_ticker_info()
 
 
 def binance_open_orders(exchange_credentials):
+    return {
+        'success': True,
+        'msg': 'Ok',
+        'orders': []
+    }
+
+
+def binance_open_orders(exchange_credentials):
     payload = {}
     timestamp = int(round(time.time() * 1000))
     request_body = f'recvWindow=5000&timestamp={timestamp}'
