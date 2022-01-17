@@ -8,6 +8,11 @@ type Query {
   openOrders fetches data regarding currently opened orders for the given account
   """
   openOrders(exchange: EXCHANGE! authToken: String!): OpenOrdersResult!
+
+  """
+  closedOrders fetches data regarding canceled, expired, rejected and filled orders
+  """
+  closedOrders(exchange: EXCHANGE! authToken: String!): ClosedOrdersResult!
 }
 
 extend type Mutation {
