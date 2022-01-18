@@ -9,6 +9,7 @@ from pytz import timezone
 
 from cryptofolio import app
 from .cache import BINANCE_EXCHANGE_INFO, BINANCE_ASSET_TICKER_INFO, BINANCE_ORDERS_INFO
+from .cache import update_binance_order_info
 
 
 def binance_closed_orders(exchange_credentials):
@@ -110,6 +111,9 @@ def prepare_open_orders_data(response_json):
             int(position['time'])//1000, timezone('Europe/Warsaw'))
         orders.append(order)
 
+        update_binance_order_info(position['symbol'])
+
+    return orders
     return orders
 
 
@@ -153,6 +157,7 @@ def binance_prepare_account_info_data(response_json):
                 account_information['totalValue'] += balance['value']
             else:
                 if f'{asset["asset"]}USDT' in BINANCE_ASSET_TICKER_INFO.keys():
+                    update_binance_order_info(f'{asset["asset"]}USDT')
                     balance['value'] = round(float(
                         BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
                         ['price']) * float(asset['free']), 2)

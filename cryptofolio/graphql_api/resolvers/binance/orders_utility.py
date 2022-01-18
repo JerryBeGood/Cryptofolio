@@ -1,12 +1,13 @@
 import requests
 
 from cryptofolio import app
-from cryptofolio.graphql_api.resolvers.binance.utility import BINANCE_EXCHANGE_INFO
+from .cache import update_binance_order_info, BINANCE_EXCHANGE_INFO
 
 
 def make_order(params, api_key):
 
     payload = {}
+    update_binance_order_info(params['symbol'])
 
     with requests.post(f'{app.config.get("BINANCE")}/api/v3/order',
                        params=params,
