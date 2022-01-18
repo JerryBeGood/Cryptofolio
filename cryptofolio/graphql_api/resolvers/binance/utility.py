@@ -7,11 +7,8 @@ import hashlib
 from pytz import timezone
 
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
 from cryptofolio import app
-
-BINANCE_EXCHANGE_INFO = binance_exchange_info()
-BINANCE_ASSET_TICKER_INFO = binance_asset_ticker_info()
+from .cache import BINANCE_EXCHANGE_INFO, BINANCE_ASSET_TICKER_INFO, BINANCE_ORDERS_INFO
 
 
 def binance_closed_orders(exchange_credentials):
