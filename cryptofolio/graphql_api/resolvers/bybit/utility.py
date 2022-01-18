@@ -7,15 +7,37 @@ import hashlib
 from pytz import timezone
 
 from cryptofolio import app
+from cryptofolio.graphql_api.resolvers.shared_utilities import prepare_start_time
 from .cache import BYBIT_ASSET_TICKER_INFO, BYBIT_EXCHANGE_INFO
 
 
 def bybit_closed_orders(exchange_credentials):
-    return {
-        'success': True,
-        'msg': 'Ok',
-        'orders': []
+    timestamp = int(round(time.time() * 1000))
+    startTime = prepare_start_time()
+    params = {
+        'api_key': exchange_credentials[1],
+        'startTime': startTime,
+        'timestamp': timestamp
     }
+    params['sign'] = make_signature(params, exchange_credentials[2])
+
+    with requests.get(f'{app.config.get("BYBIT")}/spot/v1/history-orders',
+                      params=params) as response:
+
+        payload = {}
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            payload['success'] = True
+            payload['msg'] = 'Ok'
+            payload['orders'] = prepare_closed_orders_data(
+                response_json)
+        else:
+            payload['success'] = False
+            payload['msg'] = response_json['ret_msg']
+            payload['orders'] = []
+
+        return payload
 
 
 def bybit_open_orders(exchange_credentials):
@@ -74,6 +96,24 @@ def bybit_account_info(exchange_credentials):
 
 
 def prepare_open_orders_data(response_json):
+    orders = []
+    for position in response_json['result']:
+        order = {}
+        order['pair'] = position['symbol']
+        order['type'] = position['type']
+        order['side'] = position['side']
+        order['price'] = position['price']
+        order['origQty'] = position['origQty']
+        order['execQty'] = position['executedQty']
+        order['status'] = position['status']
+        order['time'] = datetime.datetime.fromtimestamp(
+            int(position['time'])//1000, timezone('Europe/Warsaw'))
+        orders.append(order)
+
+    return orders
+
+
+def prepare_closed_orders_data(response_json):
     orders = []
     for position in response_json['result']:
         order = {}
