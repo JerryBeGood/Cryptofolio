@@ -73,7 +73,7 @@ def bybit_exchange_info():
     return payload
 
 
-def binance_exchange_info():
+def prepare_binance_exchange_info():
 
     payload = {}
 
@@ -88,7 +88,7 @@ def binance_exchange_info():
     return payload
 
 
-def binance_asset_ticker_info():
+def prepare_binance_asset_ticker_info():
 
     payload = {}
 
