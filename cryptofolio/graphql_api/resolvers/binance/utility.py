@@ -8,6 +8,7 @@ from pytz import timezone
 
 
 from cryptofolio import app
+from cryptofolio.graphql_api.resolvers.shared_utilities import prepare_start_time
 from .cache import BINANCE_EXCHANGE_INFO, BINANCE_ASSET_TICKER_INFO, BINANCE_ORDERS_INFO
 from .cache import update_binance_order_info
 
@@ -224,9 +225,3 @@ def binance_prepare_account_info_data(response_json):
             account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
 
     return account_information
-
-
-def prepare_start_time():
-    startTime = datetime.datetime.now() - datetime.timedelta(days=7)
-    startTime = int(startTime.timestamp() * 1000)
-    return startTime

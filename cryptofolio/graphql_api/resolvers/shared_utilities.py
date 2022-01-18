@@ -1,5 +1,6 @@
 import jwt
 import requests
+import datetime
 
 from cryptography.fernet import Fernet
 
@@ -126,3 +127,9 @@ def prepare_binance_asset_ticker_info():
             }
 
     return payload
+
+
+def prepare_start_time():
+    startTime = datetime.datetime.now() - datetime.timedelta(days=7)
+    startTime = int(startTime.timestamp() * 1000)
+    return startTime
