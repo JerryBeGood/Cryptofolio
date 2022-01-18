@@ -99,14 +99,14 @@ def prepare_account_info_data(response_json):
             asset['asset'] = balance['coin']
 
             if asset['asset'] == 'USDT':
-                asset['quantity'] = round(float(balance['free']), 2)
+                asset['quantity'] = round(float(balance['free']), 5)
                 asset['value'] = asset['quantity']
                 account_information['totalValue'] += float(
                     round(asset['value'], 2))
             else:
-                asset['quantity'] = round(float(balance['free']), 2)
+                asset['quantity'] = round(float(balance['free']), 5)
                 asset['value'] = round(asset['quantity'] * float(
-                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 2)
+                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 5)
                 account_information['totalValue'] += float(
                     round(asset['value'], 2))
 

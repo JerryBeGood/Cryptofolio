@@ -139,18 +139,18 @@ def binance_prepare_account_info_data(response_json):
     for asset in response_json['balances']:
         balance = {}
         balance['asset'] = asset['asset']
-        balance['quantity'] = round(float(asset['free']), 2)
+        balance['quantity'] = round(float(asset['free']), 5)
 
         if balance['quantity'] != 0.0 and balance['quantity'] is not None:
 
             if asset['asset'] in ['USDT', 'BUSD']:
-                balance['value'] = balance['quantity']
+                balance['value'] = round(balance['quantity'], 5)
                 account_information['totalValue'] += balance['value']
             else:
                 if f'{asset["asset"]}USDT' in BINANCE_ASSET_TICKER_INFO.keys():
                     balance['value'] = round(float(
                         BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                        ['price']) * float(asset['free']), 2)
+                        ['price']) * float(asset['free']), 5)
                     account_information['totalValue'] += balance['value']
                 else:
                     balance['percentage'] = None
