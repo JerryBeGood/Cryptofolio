@@ -6,11 +6,8 @@ import hashlib
 
 from pytz import timezone
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_asset_ticker_info, bybit_exchange_info
 from cryptofolio import app
-
-BYBIT_EXCHANGE_INFO = bybit_exchange_info()
-BYBIT_ASSET_TICKER_INFO = bybit_asset_ticker_info()
+from .cache import BYBIT_ASSET_TICKER_INFO, BYBIT_EXCHANGE_INFO
 
 
 def bybit_closed_orders(exchange_credentials):

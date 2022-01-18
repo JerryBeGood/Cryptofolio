@@ -1,6 +1,5 @@
 import time
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token, fetch_exchange_credentials
 from .utility import make_order, make_signature
 
 
