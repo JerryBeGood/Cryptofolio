@@ -148,12 +148,14 @@ def prepare_account_info_data(response_json):
                 asset['value'] = asset['quantity']
                 account_information['totalValue'] += float(
                     round(asset['value'], 2))
-            else:
+            elif f'{asset["asset"]}USDT' in BYBIT_ASSET_TICKER_INFO.keys():
                 asset['quantity'] = round(float(balance['free']), 5)
                 asset['value'] = round(asset['quantity'] * float(
                     BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 5)
                 account_information['totalValue'] += float(
                     round(asset['value'], 2))
+            else:
+                continue
 
             account_information['balances'].append(asset)
 
@@ -165,11 +167,12 @@ def prepare_account_info_data(response_json):
         for balance in account_information['balances']:
             balance_change = day_change_percentage(
                 symbol=f"{balance['asset']}USDT")
+            print(balance_change)
             balance_change_value = balance_change * (balance['value'] / 100)
             account_information['valueChangePercentage'] += balance_change_value
 
         account_information['valueChangePercentage'] = round(
-            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 5)
 
     return account_information
 
@@ -187,12 +190,12 @@ def day_change_percentage(symbol: str):
             }) as response:
 
         response_json = response.json()
-
+        
         if response_json['ret_code'] == 0:
             open = float(response_json['result'][0][1])
             close = float(response_json['result'][0][4])
 
-            payload = round(close / (open / 100) - 100, 3)
+            payload = round(close / (open / 100) - 100, 5)
 
     return payload
 
