@@ -1,7 +1,6 @@
 .vscode
-Docs/
 __pycache__
 *.pyc
-test.py
 /venv
-playground.py
+test*.py
+config*.py

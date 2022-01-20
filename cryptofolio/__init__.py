@@ -6,7 +6,7 @@ from cryptofolio.models import db
 
 
 app = Flask(__name__.split('.')[0])
-app.config.from_pyfile('config/init_config.py')
+app.config.from_pyfile('init_config.py')
 
 mail = Mail()
 bcrypt = Bcrypt()
