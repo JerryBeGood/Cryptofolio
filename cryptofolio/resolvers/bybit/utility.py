@@ -6,11 +6,38 @@ import hashlib
 
 from pytz import timezone
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import bybit_asset_ticker_info, bybit_exchange_info
 from cryptofolio import app
+from cryptofolio.resolvers.shared_utilities import prepare_start_time
+from .cache import BYBIT_ASSET_TICKER_INFO, BYBIT_EXCHANGE_INFO
 
-BYBIT_EXCHANGE_INFO = bybit_exchange_info()
-BYBIT_ASSET_TICKER_INFO = bybit_asset_ticker_info()
+
+def bybit_closed_orders(exchange_credentials):
+    timestamp = int(round(time.time() * 1000))
+    startTime = prepare_start_time()
+    params = {
+        'api_key': exchange_credentials[1],
+        'startTime': startTime,
+        'timestamp': timestamp
+    }
+    params['sign'] = make_signature(params, exchange_credentials[2])
+
+    with requests.get(f'{app.config.get("BYBIT")}/spot/v1/history-orders',
+                      params=params) as response:
+
+        payload = {}
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            payload['success'] = True
+            payload['msg'] = 'Ok'
+            payload['orders'] = prepare_closed_orders_data(
+                response_json)
+        else:
+            payload['success'] = False
+            payload['msg'] = response_json['ret_msg']
+            payload['orders'] = []
+
+        return payload
 
 
 def bybit_open_orders(exchange_credentials):
@@ -86,6 +113,24 @@ def prepare_open_orders_data(response_json):
     return orders
 
 
+def prepare_closed_orders_data(response_json):
+    orders = []
+    for position in response_json['result']:
+        order = {}
+        order['pair'] = position['symbol']
+        order['type'] = position['type']
+        order['side'] = position['side']
+        order['price'] = position['price']
+        order['origQty'] = position['origQty']
+        order['execQty'] = position['executedQty']
+        order['status'] = position['status']
+        order['time'] = datetime.datetime.fromtimestamp(
+            int(position['time'])//1000, timezone('Europe/Warsaw'))
+        orders.append(order)
+
+    return orders
+
+
 def prepare_account_info_data(response_json):
 
     account_information = {}
@@ -99,16 +144,18 @@ def prepare_account_info_data(response_json):
             asset['asset'] = balance['coin']
 
             if asset['asset'] == 'USDT':
-                asset['quantity'] = round(float(balance['free']), 2)
+                asset['quantity'] = round(float(balance['free']), 5)
                 asset['value'] = asset['quantity']
                 account_information['totalValue'] += float(
                     round(asset['value'], 2))
-            else:
-                asset['quantity'] = round(float(balance['free']), 2)
+            elif f'{asset["asset"]}USDT' in BYBIT_ASSET_TICKER_INFO.keys():
+                asset['quantity'] = round(float(balance['free']), 5)
                 asset['value'] = round(asset['quantity'] * float(
-                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 2)
+                    BYBIT_ASSET_TICKER_INFO[f"{asset['asset']}USDT"]['price']), 5)
                 account_information['totalValue'] += float(
                     round(asset['value'], 2))
+            else:
+                continue
 
             account_information['balances'].append(asset)
 
@@ -124,7 +171,7 @@ def prepare_account_info_data(response_json):
             account_information['valueChangePercentage'] += balance_change_value
 
         account_information['valueChangePercentage'] = round(
-            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 2)
+            account_information['valueChangePercentage'] / (account_information['totalValue'] / 100), 5)
 
     return account_information
 
@@ -142,12 +189,12 @@ def day_change_percentage(symbol: str):
             }) as response:
 
         response_json = response.json()
-
+        
         if response_json['ret_code'] == 0:
             open = float(response_json['result'][0][1])
             close = float(response_json['result'][0][4])
 
-            payload = round(close / (open / 100) - 100, 3)
+            payload = round(close / (open / 100) - 100, 5)
 
     return payload
 
@@ -209,7 +256,9 @@ def validate_bybit_credentials(API_key, secret):
                           'sign': sign
                       }) as response:
 
-        if response.status_code == 200:
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
             return True, response
         else:
             return False, response

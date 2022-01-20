@@ -3,7 +3,7 @@ import secrets
 import datetime
 
 from .user_account_utility import validate_exchange_credentials, generate_auth_token, code_auth
-from cryptofolio.graphql_api.resolvers.shared_utilities import validate_token
+from cryptofolio.resolvers.shared_utilities import validate_token
 
 from flask_mail import Message
 from cryptography.fernet import Fernet

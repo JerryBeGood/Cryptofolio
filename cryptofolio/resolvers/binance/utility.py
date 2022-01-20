@@ -7,11 +7,43 @@ import hashlib
 from pytz import timezone
 
 
-from cryptofolio.graphql_api.resolvers.shared_utilities import binance_exchange_info, binance_asset_ticker_info
 from cryptofolio import app
+from cryptofolio.resolvers.shared_utilities import prepare_start_time
+from .cache import BINANCE_EXCHANGE_INFO, BINANCE_ASSET_TICKER_INFO, BINANCE_ORDERS_INFO
+from .cache import update_binance_order_info
 
-BINANCE_EXCHANGE_INFO = binance_exchange_info()
-BINANCE_ASSET_TICKER_INFO = binance_asset_ticker_info()
+
+def binance_closed_orders(exchange_credentials):
+    payload = {}
+    payload['orders'] = []
+
+    for symbol in BINANCE_ORDERS_INFO:
+        timestamp = int(round(time.time() * 1000))
+        startTime = prepare_start_time()
+        request_body = f'symbol={symbol}&startTime={startTime}&recvWindow=5000&timestamp={timestamp}'
+        signature = hmac.new(exchange_credentials[2].encode(),
+                             request_body.encode('UTF-8'),
+                             digestmod=hashlib.sha256).hexdigest()
+
+        with requests.get(f'{app.config.get("BINANCE")}/api/v3/allOrders',
+                          params={
+                              'symbol': symbol,
+                              'startTime': startTime,
+                              'recvWindow': 5000,
+                              'timestamp': timestamp,
+                              'signature': signature
+                          },
+                          headers={'X-MBX-APIKEY': exchange_credentials[1]}) as response:
+
+            response_json = response.json()
+
+            if response.status_code == 200:
+                payload['orders'] += prepare_closed_orders_data(response_json)
+
+    payload['success'] = True
+    payload['msg'] = 'Ok'
+
+    return payload
 
 
 def binance_open_orders(exchange_credentials):
@@ -105,6 +137,27 @@ def prepare_open_orders_data(response_json):
             int(position['time'])//1000, timezone('Europe/Warsaw'))
         orders.append(order)
 
+        update_binance_order_info(position['symbol'])
+
+    return orders
+
+
+def prepare_closed_orders_data(response_json):
+    orders = []
+    for position in response_json:
+        if position['status'] in ['CANCELED', 'EXPIRED', 'FILLED']:
+            order = {}
+            order['pair'] = position['symbol']
+            order['type'] = position['type']
+            order['side'] = position['side']
+            order['price'] = position['price']
+            order['origQty'] = position['origQty']
+            order['execQty'] = position['executedQty']
+            order['status'] = position['status']
+            order['time'] = datetime.datetime.fromtimestamp(
+                int(position['time'])//1000, timezone('Europe/Warsaw'))
+            orders.append(order)
+
     return orders
 
 
@@ -139,18 +192,19 @@ def binance_prepare_account_info_data(response_json):
     for asset in response_json['balances']:
         balance = {}
         balance['asset'] = asset['asset']
-        balance['quantity'] = round(float(asset['free']), 2)
+        balance['quantity'] = round(float(asset['free']), 5)
 
         if balance['quantity'] != 0.0 and balance['quantity'] is not None:
 
             if asset['asset'] in ['USDT', 'BUSD']:
-                balance['value'] = balance['quantity']
+                balance['value'] = round(balance['quantity'], 5)
                 account_information['totalValue'] += balance['value']
             else:
                 if f'{asset["asset"]}USDT' in BINANCE_ASSET_TICKER_INFO.keys():
+                    update_binance_order_info(f'{asset["asset"]}USDT')
                     balance['value'] = round(float(
                         BINANCE_ASSET_TICKER_INFO[f'{asset["asset"]}USDT']
-                        ['price']) * float(asset['free']), 2)
+                        ['price']) * float(asset['free']), 5)
                     account_information['totalValue'] += balance['value']
                 else:
                     balance['percentage'] = None

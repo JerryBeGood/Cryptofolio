@@ -1,5 +1,6 @@
 import jwt
 import requests
+import datetime
 
 from cryptography.fernet import Fernet
 
@@ -58,7 +59,7 @@ def fetch_exchange_credentials(token_claims, exchange):
         return True, API_key, secret
 
 
-def bybit_exchange_info():
+def prepare_bybit_exchange_info():
 
     payload = {}
 
@@ -73,7 +74,27 @@ def bybit_exchange_info():
     return payload
 
 
-def binance_exchange_info():
+def prepare_bybit_asset_ticker_info():
+
+    payload = {}
+
+    with requests.get(
+            f'{app.config.get("BYBIT")}/spot/quote/v1/ticker/24hr') as response:
+
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
+            for item in response_json['result']:
+                asset = {}
+                asset['price'] = item['bestAskPrice']
+                payload[item['symbol']] = asset
+        else:
+            payload = {'Msg': 'Asset ticker info error'}
+
+        return payload
+
+
+def prepare_binance_exchange_info():
 
     payload = {}
 
@@ -88,7 +109,7 @@ def binance_exchange_info():
     return payload
 
 
-def binance_asset_ticker_info():
+def prepare_binance_asset_ticker_info():
 
     payload = {}
 
@@ -108,21 +129,7 @@ def binance_asset_ticker_info():
     return payload
 
 
-def bybit_asset_ticker_info():
-
-    payload = {}
-
-    with requests.get(
-            f'{app.config.get("BYBIT")}/spot/quote/v1/ticker/24hr') as response:
-
-        response_json = response.json()
-
-        if response_json['ret_code'] == 0:
-            for item in response_json['result']:
-                asset = {}
-                asset['price'] = item['bestAskPrice']
-                payload[item['symbol']] = asset
-        else:
-            payload = {'Msg': 'Asset ticker info error'}
-
-        return payload
+def prepare_start_time():
+    startTime = datetime.datetime.now() - datetime.timedelta(days=7)
+    startTime = int(startTime.timestamp() * 1000)
+    return startTime

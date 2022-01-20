@@ -1,9 +1,9 @@
 from ariadne import load_schema_from_path, ObjectType
-from cryptofolio.graphql_api.resolvers import coingeko
+from cryptofolio.resolvers import coingeko
 
 # Loading of schema definition
 coingeko_typ_defs = load_schema_from_path(
-    'cryptofolio/graphql_api/schema/coingeko')
+    'cryptofolio/schema/coingeko')
 
 # Initialization of type variables
 coingeko_query = ObjectType("Query")
