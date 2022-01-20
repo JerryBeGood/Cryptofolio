@@ -4,7 +4,7 @@ from ariadne import graphql_sync
 from ariadne.constants import PLAYGROUND_HTML
 
 from cryptofolio import app
-from cryptofolio.graphql_api.schema import schema
+from cryptofolio.schema import schema
 
 @app.route("/graphql", methods=["GET"])
 def graphql_playground():

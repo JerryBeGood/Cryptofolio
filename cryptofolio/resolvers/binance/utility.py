@@ -8,7 +8,7 @@ from pytz import timezone
 
 
 from cryptofolio import app
-from cryptofolio.graphql_api.resolvers.shared_utilities import prepare_start_time
+from cryptofolio.resolvers.shared_utilities import prepare_start_time
 from .cache import BINANCE_EXCHANGE_INFO, BINANCE_ASSET_TICKER_INFO, BINANCE_ORDERS_INFO
 from .cache import update_binance_order_info
 

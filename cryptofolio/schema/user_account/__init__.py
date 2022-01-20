@@ -1,9 +1,9 @@
 from ariadne import load_schema_from_path
 from ariadne.objects import ObjectType
-from cryptofolio.graphql_api.resolvers import user_account
+from cryptofolio.resolvers import user_account
 
 user_account_type_defs = load_schema_from_path(
-    'cryptofolio/graphql_api/schema/user_account')
+    'cryptofolio/schema/user_account')
 
 user_account_mutation = ObjectType("Mutation")
 

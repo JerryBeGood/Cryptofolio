@@ -1,4 +1,0 @@
-from cryptofolio.graphql_api.resolvers.shared_utilities import prepare_bybit_asset_ticker_info, prepare_bybit_exchange_info
-
-BYBIT_EXCHANGE_INFO = prepare_bybit_exchange_info()
-BYBIT_ASSET_TICKER_INFO = prepare_bybit_asset_ticker_info()

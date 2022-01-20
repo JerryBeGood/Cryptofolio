@@ -7,7 +7,7 @@ import hashlib
 from pytz import timezone
 
 from cryptofolio import app
-from cryptofolio.graphql_api.resolvers.shared_utilities import prepare_start_time
+from cryptofolio.resolvers.shared_utilities import prepare_start_time
 from .cache import BYBIT_ASSET_TICKER_INFO, BYBIT_EXCHANGE_INFO
 
 

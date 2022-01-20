@@ -2,8 +2,8 @@ import datetime
 import jwt
 
 from cryptofolio import app, db
-from cryptofolio.graphql_api.resolvers.binance import validate_binance_credentials
-from cryptofolio.graphql_api.resolvers.bybit.utility import validate_bybit_credentials
+from cryptofolio.resolvers.binance import validate_binance_credentials
+from cryptofolio.resolvers.bybit.utility import validate_bybit_credentials
 from cryptofolio.models import Code
 
 
