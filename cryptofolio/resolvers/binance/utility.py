@@ -145,17 +145,18 @@ def prepare_open_orders_data(response_json):
 def prepare_closed_orders_data(response_json):
     orders = []
     for position in response_json:
-        order = {}
-        order['pair'] = position['symbol']
-        order['type'] = position['type']
-        order['side'] = position['side']
-        order['price'] = position['price']
-        order['origQty'] = position['origQty']
-        order['execQty'] = position['executedQty']
-        order['status'] = position['status']
-        order['time'] = datetime.datetime.fromtimestamp(
-            int(position['time'])//1000, timezone('Europe/Warsaw'))
-        orders.append(order)
+        if position['status'] in ['CANCELED', 'EXPIRED', 'FILLED']:
+            order = {}
+            order['pair'] = position['symbol']
+            order['type'] = position['type']
+            order['side'] = position['side']
+            order['price'] = position['price']
+            order['origQty'] = position['origQty']
+            order['execQty'] = position['executedQty']
+            order['status'] = position['status']
+            order['time'] = datetime.datetime.fromtimestamp(
+                int(position['time'])//1000, timezone('Europe/Warsaw'))
+            orders.append(order)
 
     return orders
 
