@@ -70,15 +70,37 @@ CREATE DATABASE cryptofolio;
 
 Use `\l` to check if it exists.
 
-If everything went well you can know go to projects home directory. Run python interactive interepreter in the terminal with `python3` and run this simple script for building database schema:
+If everything went well you can now go to projects home directory. Run python interactive interepreter in the terminal with `python3` and run this simple script for building database schema:
 
 ```
 from cryptofolio import db 
 
 db.create_all() 
 db.session.commit() 
-exit()
 ```
+
+# Server Configuration
+
+In cryptofolio directory along with routes.py, models.py and etc. you can find `init_config.py` which consists of empty configurational strings for our application. In order to deploy you need to create new configurational file e.g. `config.py` and fill it with configuration settings. 
+
+Additional information on how to do it is avaible here:
+- [Flask Mail](https://pythonhosted.org/Flask-Mail/)
+- [Flask SqlAlchemy](https://flask-sqlalchemy.palletsprojects.com/en/2.x/)
+
+
+# Server Start
+
+After all setup and configuration steps have been done all you need to do to run Cryptofolio Server is to run app.py file from project's home directory. It requires two parameters:
+- config_file: name of config file
+- app_mode: --real or --test for interaction with testnet API of exchanges or the real one
+
+
+```
+python3 app.py config.py --real
+```
+
+Afterwards GraphQl API should be avaible at `localhost:5000/graphql`
+
 
 # Authors
 - [Marcin Dobrowolski](https://github.com/JerryBeGood)
