@@ -167,7 +167,6 @@ def prepare_account_info_data(response_json):
         for balance in account_information['balances']:
             balance_change = day_change_percentage(
                 symbol=f"{balance['asset']}USDT")
-            print(balance_change)
             balance_change_value = balance_change * (balance['value'] / 100)
             account_information['valueChangePercentage'] += balance_change_value
 
@@ -257,7 +256,9 @@ def validate_bybit_credentials(API_key, secret):
                           'sign': sign
                       }) as response:
 
-        if response.status_code == 200:
+        response_json = response.json()
+
+        if response_json['ret_code'] == 0:
             return True, response
         else:
             return False, response
