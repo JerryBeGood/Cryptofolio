@@ -50,7 +50,7 @@ def describe_order_error(symbol, error):
     elif error == 'MAX_NUM_ORDERS':
         return 'Account has too many open orders on the symbol'
 
-    return error[16:]
+    return error
 
 
 def prepare_stop_loss_order_request_body(order, timestamp):
