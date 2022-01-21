@@ -38,13 +38,14 @@ def sign_up_resolver(obj, info, email, password):
         return {'Success': True, 'Token': 'Database error'}
 
     try:
-        msg = Message(
-            'Cryptofolio - activation code',
-            recipients=[user.email],
-            body=f'{activation_code.code}',
-            sender=("Cryptofolio", 'cryptofolio.service@gmail.com')
-        )
-        mail.send(msg)
+        with mail.connect() as connection:
+            msg = Message(
+                'Cryptofolio - activation code',
+                recipients=[user.email],
+                body=f'{activation_code.code}',
+                sender=("Cryptofolio", 'cryptofolio.service@gmail.com')
+            )
+            connection.send(msg)
     except Exception as error:
         db.session.delete(user)
         db.session.delete(activation_code)
